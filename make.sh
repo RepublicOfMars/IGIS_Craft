@@ -33,6 +33,7 @@ if [[ "$CONFIG" =~ ^(debug|release)$ ]]; then
        echo "IGIS_LIBRARY_DEBUG_PATH at $IGIS_LIBRARY_DEBUG_PATH"
        echo "SCENES_LIBRARY_DEBUG_PATH at $SCENES_LIBRARY_DEBUG_PATH"
        echo "Building debug configuration..."
+       LD_LIBRARY_PATH="$IGIS_LIBRARY_DEBUG_PATH:$SCENES_LIBRARY_DEBUG_PATH:$CURSES_LIBRARY_DEBUG_PATH:$NCURSES_LIBRARY_DEBUG_PATH:$LOGICAL_OPERATORS_LIBRARY_DEBUG_PATH" 
        swift $MODE -c debug -Xswiftc -I -Xswiftc $IGIS_LIBRARY_DEBUG_PATH -Xswiftc -L -Xswiftc $IGIS_LIBRARY_DEBUG_PATH -Xswiftc -I -Xswiftc $SCENES_LIBRARY_DEBUG_PATH -Xswiftc -L -Xswiftc $SCENES_LIBRARY_DEBUG_PATH -Xswiftc -lIgis -Xswiftc -lScenes
     else
        if [[ -z "$IGIS_LIBRARY_RELEASE_PATH" ]]; then
@@ -48,6 +49,7 @@ if [[ "$CONFIG" =~ ^(debug|release)$ ]]; then
        echo "IGIS_LIBRARY_RELEASE_PATH at $IGIS_LIBRARY_RELEASE_PATH"
        echo "SCENES_LIBRARY_RELEASE_PATH at $SCENES_LIBRARY_RELEASE_PATH"
        echo "Building release configuration..."
+       LD_LIBRARY_PATH="$IGIS_LIBRARY_RELEASE_PATH:$SCENES_LIBRARY_RELEASE_PATH:$CURSES_LIBRARY_RELEASE_PATH:$NCURSES_LIBRARY_RELEASE_PATH:$LOGICAL_OPERATORS_LIBRARY_RELEASE_PATH" 
        swift $MODE -c release -Xswiftc -I -Xswiftc $IGIS_LIBRARY_RELEASE_PATH -Xswiftc -L -Xswiftc $IGIS_LIBRARY_RELEASE_PATH -Xswiftc -I -Xswiftc $SCENES_LIBRARY_RELEASE_PATH -Xswiftc -L -Xswiftc $SCENES_LIBRARY_RELEASE_PATH -Xswiftc -lIgis -Xswiftc -lScenes
     fi    
 else
