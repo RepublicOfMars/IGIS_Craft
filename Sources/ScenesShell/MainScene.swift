@@ -13,7 +13,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import Igis
 import Scenes
 
 /*
@@ -24,7 +23,23 @@ import Scenes
  */
 class MainScene : Scene {
 
+    /* Scenes typically include one or more Layers.
+       A common approach is to use three Layers:
+       One for the background, one for interaction,
+       and one for the foreground.
+     */
+    let backgroundLayer = BackgroundLayer()
+    let interactionLayer = InteractionLayer()
+    let foregroundLayer = ForegroundLayer()
+
     init() {
+        // Using a meaningful name can be helpful for debugging
         super.init(name:"Main")
+
+        // We insert our Layers in the constructor
+        // We place each layer in front of the previous layer
+        insert(layer:backgroundLayer, at:.back)
+        insert(layer:interactionLayer, at:.inFrontOf(object:backgroundLayer))
+        insert(layer:foregroundLayer, at:.front)
     }
 }
