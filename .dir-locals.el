@@ -2,4 +2,4 @@
 ;;; For more information see (info "(emacs) Directory Variables")
 
 ((swift-mode
-  (flycheck-swift-include-search-paths  "/usr/local/lib/merlin/Igis-1.2.0/Igis/.build/debug" "/usr/local/lib/merlin/Scenes-1.0.0/Scenes/.build/debug")))
+  (flycheck-swift-include-search-paths  "/usr/local/lib/merlin/Igis-1.2.0/Igis/.build/debug" "/usr/local/lib/merlin/Scenes-1.0.4/Scenes/.build/debug")))
