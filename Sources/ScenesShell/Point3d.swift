@@ -35,17 +35,10 @@ class Point3d {
         return relativePosFinal
     }
 
-    /*
-    func actualLocation(camera:Camera) -> Point3d { //returns location of a 3d Point, from relative location to actual location
-        let actualPos = Point3d(x:self.x, y:0, z:0) //relative position, not accounting for pitch
-        actualPos.z = self.z
-    }
-    */
-
     func flatten(camera:Camera, canvas:Canvas) -> Point? { //converts the 3d Point to an IGIS Point for rendering
         let canvasSize = canvas.canvasSize!
         let relativeLocation = self.relativeLocation(camera:camera)
-        if relativeLocation.z > 0.2 {
+        if relativeLocation.z > 0.1 {
             let point2d = Point(x:(Int((relativeLocation.x/(-relativeLocation.z)) * Double(canvasSize.height))) + canvasSize.width/2,
                                 y:(Int((relativeLocation.y/(-relativeLocation.z)) * Double(canvasSize.height))) + canvasSize.height/2)
             return point2d
@@ -68,5 +61,12 @@ class BlockPoint3d { //Used for blocks. when converting to normal Point3d, adds 
 
     func convertToDouble() -> Point3d {
         return Point3d(x:Double(x)+0.5, y:Double(y)+0.5, z:Double(z)+0.5)
+    }
+
+    func isEqual(to:BlockPoint3d) -> Bool {
+        if self.x == to.x && self.y == to.y && self.z == to.z {
+            return true
+        }
+        return false
     }
 }

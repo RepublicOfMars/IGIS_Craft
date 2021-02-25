@@ -33,7 +33,20 @@ class Path3d {
         return path
     }
 
-    func renderPath(camera:Camera, canvas:Canvas) {
+    func renderPath(camera:Camera, canvas:Canvas, color:Color) {
+        var subtraction : (red:UInt8, green:UInt8, blue:UInt8) = (red:0, green:0, blue:0)
+        if color.red >= 8 {
+            subtraction.red = 8
+        }
+        if color.green >= 8 {
+            subtraction.green = 8
+        }
+        if color.blue >= 8 {
+            subtraction.blue = 8
+        }
+        
+        canvas.render(StrokeStyle(color:Color(red:color.red-subtraction.red, green:color.green-subtraction.green, blue:color.blue-subtraction.blue)))
+        canvas.render(FillStyle(color:color))
         canvas.render(self.flatten(camera:camera, canvas:canvas))
     }
 }

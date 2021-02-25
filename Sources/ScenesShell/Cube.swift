@@ -24,42 +24,22 @@ class Cube {
     }
 
     func sortByDistance(_ sortingSquares:inout [Square], camera:Camera) {
-        var sorted = false
+        var workingArray:[Double] = []
 
-        func swap(_ first:Int, _ second:Int, _ arr:inout [Square]) {
-            if first != second {
-                let temp = arr[second]
-                arr[second] = arr[first]
-                arr[first] = temp
-            }
+        for square in sortingSquares {
+            workingArray.append(square.center.distanceFrom(point:Point3d(x:camera.x, y:camera.y, z:camera.z)))
         }
-        
-        while !sorted {
-            var swaps = 0
-            
-            for index in 0 ..< sortingSquares.count-1 {
-                if sortingSquares[index].center.distanceFrom(point:Point3d(x:camera.x, y:camera.y, z:camera.z)) <
-                     sortingSquares[index+1].center.distanceFrom(point:Point3d(x:camera.x, y:camera.y, z:camera.z)) {
-                    swap(index, index+1, &sortingSquares)
-                    swaps += 1
-                }
-            }
 
-            if swaps == 0 {
-                sorted = true
-            }
-        }
+        sortingSquares = mergeSort(sortingSquares, by:workingArray) as! [Square]
     }
 
-    func renderCube(camera:Camera, canvas:Canvas) {
+    func renderCube(camera:Camera, canvas:Canvas, color:Color) {
         var sides = self.getSquares()
         
         sortByDistance(&sides, camera:camera)
-
-        //sort sides by distance
         
         for square in sides {
-            square.renderSquare(camera:camera, canvas:canvas)
+            square.renderSquare(camera:camera, canvas:canvas, color:color)
         }
     }
 }

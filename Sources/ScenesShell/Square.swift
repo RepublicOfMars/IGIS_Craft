@@ -38,7 +38,7 @@ class Square {
         return square
     }
 
-    func renderSquare(camera:Camera, canvas:Canvas) {
-        self.getPath().renderPath(camera:camera, canvas:canvas)
+    func renderSquare(camera:Camera, canvas:Canvas, color:Color) {
+        self.getPath().renderPath(camera:camera, canvas:canvas, color:color)
     }
 }
