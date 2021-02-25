@@ -11,7 +11,7 @@ class Background : RenderableEntity {
 
     init() {
         // Using a meaningful name can be helpful for debugging
-        let worldSize = (x:8, y:4, z:8)
+        let worldSize = (x:8, y:8, z:8)
         let totalChunks = worldSize.x * worldSize.y * worldSize.z
         var chunksGenerated = 0
         

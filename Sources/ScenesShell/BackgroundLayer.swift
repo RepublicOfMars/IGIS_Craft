@@ -218,7 +218,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 canvas.render(Text(location:Point(x:20, y:50), text:"Z: \(Int(BackgroundLayer.cameras[thisComputer].z))", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(BackgroundLayer.cameras[thisComputer].pitch)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(12/BackgroundLayer.computerCount)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(14/BackgroundLayer.computerCount)", fillMode:.fill))
             }
         } else {
             clearCanvas(canvas:canvas)
