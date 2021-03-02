@@ -12,7 +12,7 @@ class ShellDirector : Director {
     }
 
     override func framesPerSecond() -> Int {
-        return 14
+        return 8
     }
 }
 

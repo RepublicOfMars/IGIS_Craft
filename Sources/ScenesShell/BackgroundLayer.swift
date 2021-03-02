@@ -8,7 +8,9 @@ import Scenes
 
 
 class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
-    static let background = Background()
+    static let seed = Int.random(in:0...256)
+    
+    static let background = Background(seed:seed)
     static var cameras : [Camera] = []
     static var computerCount = 0
     var thisComputer = 0
@@ -218,7 +220,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 canvas.render(Text(location:Point(x:20, y:50), text:"Z: \(Int(BackgroundLayer.cameras[thisComputer].z))", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(BackgroundLayer.cameras[thisComputer].pitch)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(14/BackgroundLayer.computerCount)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(8/BackgroundLayer.computerCount)", fillMode:.fill))
             }
         } else {
             clearCanvas(canvas:canvas)

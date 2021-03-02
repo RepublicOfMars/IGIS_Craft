@@ -6,30 +6,36 @@ class Chunk {
     var location : BlockPoint3d
     let chunkSize : Int
 
-    init(location:BlockPoint3d, chunkSize:Int) {
+    init(location:BlockPoint3d, chunkSize:Int, seed:Int=0) {
         Blocks = []
         self.location = location
         self.chunkSize = chunkSize
         
         for y in 0 ..< chunkSize {
             Blocks.append([])
-            for x in 0 ..< chunkSize {
+            for _ in 0 ..< chunkSize {
                 Blocks[y].append([])
-                for z in 0 ..< chunkSize {
+            }
+        }
+        
+        for x in 0 ..< chunkSize {
+            for z in 0 ..< chunkSize {
+                let terrainHeight = 32 + Int(8.0*(+Noise(x:x+(self.location.x*self.chunkSize), z:z+(self.location.z*self.chunkSize), seed:seed)))
+                for y in 0 ..< chunkSize {
                     var type = "air"
                     if y + self.location.y*self.chunkSize <= 0 {
                         type = "bedrock"
-                    } else if y + self.location.y*self.chunkSize <= 9 + Int.random(in:-1...1) {
+                    } else if y + self.location.y*self.chunkSize <= terrainHeight-3 {
                         type = "stone"
-                        if y + self.location.y*self.chunkSize <= 4 && Int.random(in:1...128) == 1 {
+                        if y + self.location.y*self.chunkSize <= 8 && Int.random(in:1...128) == 1 {
                             type = "diamond_ore"
                         }
-                        if y + self.location.y*self.chunkSize <= 8 && Int.random(in:1...64) == 1 {
+                        if y + self.location.y*self.chunkSize <= 16 && Int.random(in:1...64) == 1 {
                             type = "iron_ore"
                         }
-                    } else if y + self.location.y*self.chunkSize <= 11 {
+                    } else if y + self.location.y*self.chunkSize <= terrainHeight-1 {
                         type = "dirt"
-                    } else if y + self.location.y*self.chunkSize <= 12 {
+                    } else if y + self.location.y*self.chunkSize <= terrainHeight {
                         type = "grass"
                     }
                     
@@ -40,6 +46,14 @@ class Chunk {
                 }
             }
         }
+    }
+
+    func distanceToCenter(camera:Camera) -> Double {
+        return Point3d(x:Double(self.location.x+(chunkSize/2)),
+                       y:Double(self.location.y+(chunkSize/2)),
+                       z:Double(self.location.z+(chunkSize/2))).distanceFrom(point:Point3d(x:camera.x,
+                                                                                            y:camera.y,
+                                                                                            z:camera.z))
     }
 
     func getBlockArray() -> [Block] {

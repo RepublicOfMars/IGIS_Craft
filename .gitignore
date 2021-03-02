@@ -4,3 +4,4 @@
 /*.xcodeproj
 Package.resolved
 *~
+/Sources/ScenesShell/#World.swift#

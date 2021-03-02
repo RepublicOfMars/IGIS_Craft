@@ -2,18 +2,18 @@ import Igis
 import Scenes
 
 class World {
-    var chunks : [Chunk]
-    var unloadedChunks : [Chunk]
+    var kiloChunks : [kiloChunk]
+    var unloadedKiloChunks : [kiloChunk]
     var renderDistance : Int
     let chunkSize = 4
 
     init() {
-        chunks = []
-        unloadedChunks = []
+        kiloChunks = []
+        unloadedKiloChunks = []
         renderDistance = 64
     }
 
-    func addChunk(chunk:Chunk) {
+    func addKiloChunk(chunk:Chunk) {
         chunks.append(chunk)
     }
 
