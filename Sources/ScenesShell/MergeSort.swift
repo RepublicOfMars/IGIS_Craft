@@ -64,5 +64,7 @@ private func Sort(_ sort:[Any], by:[Double]) -> (sorted:[Any], by:[Double]) {
 }
 
 public func mergeSort(_ sort:[Any], by:[Double]) -> [Any] {
-    return Sort(sort, by:by).sorted
+    let sorted = Sort(sort, by:by).sorted
+    print("Sorted \(sorted.count) items")
+    return sorted
 }

@@ -1,5 +1,6 @@
 import Igis
 import Scenes
+import Foundation
 
 class Block {
     var location : BlockPoint3d //negative corner of the block

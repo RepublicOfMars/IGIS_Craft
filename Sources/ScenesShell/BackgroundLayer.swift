@@ -45,7 +45,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
 
         computerIsActive = true
         
-        BackgroundLayer.cameras[thisComputer].move(y:14)
+        BackgroundLayer.cameras[thisComputer].move(x:-1, y:32, z:-1)
     }
     
     override func preSetup(canvasSize:Size, canvas:Canvas) {
@@ -221,6 +221,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(BackgroundLayer.cameras[thisComputer].pitch)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(8/BackgroundLayer.computerCount)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:90), text:"Currently Loaded Regions: \(BackgroundLayer.background.loadedRegions())", fillMode:.fill))
             }
         } else {
             clearCanvas(canvas:canvas)

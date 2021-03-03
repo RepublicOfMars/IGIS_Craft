@@ -78,4 +78,8 @@ class Chunk {
         
         return mergeSort(output, by:workingArray) as! [Block]
     }
+
+    func blockCount() -> Int {
+        return self.getBlockArray().count
+    }
 }

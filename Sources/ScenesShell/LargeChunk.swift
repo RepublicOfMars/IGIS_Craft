@@ -16,14 +16,20 @@ class kiloChunk {
             for x in 0 ..< kiloChunkSize {
                 Chunks[y].append([])
                 for z in 0 ..< kiloChunkSize {
-                    Chunks[y][x].append(Chunk(location:BlockPoint3d(x:(x*kiloChunkSize)+(location.x*kiloChunkSize),
-                                                                    y:(y*kiloChunkSize)+(location.y*kiloChunkSize),
-                                                                    z:(z*kiloChunkSize)+(location.z*kiloChunkSize)),
+                    Chunks[y][x].append(Chunk(location:BlockPoint3d(x:(x)+(location.x*kiloChunkSize),
+                                                                    y:(y)+(location.y*kiloChunkSize),
+                                                                    z:(z)+(location.z*kiloChunkSize)),
                                               chunkSize:kiloChunkSize,
                                               seed:seed))
                 }
             }
         }
+    }
+
+    func center() -> Point3d {
+        return Point3d(x:Double(location.x*(kiloChunkSize*kiloChunkSize)+kiloChunkSize/2),
+                       y:Double(location.y*(kiloChunkSize*kiloChunkSize)+kiloChunkSize/2),
+                       z:Double(location.z*(kiloChunkSize*kiloChunkSize)+kiloChunkSize/2))
     }
 
     func getChunkArray() -> [Chunk] {
