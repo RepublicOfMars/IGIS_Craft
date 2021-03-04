@@ -38,6 +38,7 @@ class Path3d {
 
     func renderPath(camera:Camera, canvas:Canvas, color:Color, solid:Bool=true) {
         var subtraction : (red:UInt8, green:UInt8, blue:UInt8) = (red:0, green:0, blue:0)
+        
         if color.red >= 8 {
             subtraction.red = 8
         }

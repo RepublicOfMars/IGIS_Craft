@@ -46,6 +46,10 @@ class Point3d {
             return nil
         }
     }
+
+    func convertToBlock() -> BlockPoint3d {
+        return BlockPoint3d(x:Int(self.x), y:Int(self.y), z:Int(self.z))
+    }
 }
 
 class BlockPoint3d { //Used for blocks. when converting to normal Point3d, adds 0.5 to each axis

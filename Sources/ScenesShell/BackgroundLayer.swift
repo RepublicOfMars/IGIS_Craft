@@ -17,10 +17,14 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     var computerIsActive = false
     var username = ""
     static var usernames : [String] = []
+    static let chat = Chat()
 
     static var renderingComputer = 0
 
     var initString = ""
+
+    var typing = false
+    var command = ""
     
     var cameraIsRotating = (up:false, down:false, left:false, right:false)
     var cameraIsMoving = (forward:false, backward:false, left:false, right:false, up:false, down:false)
@@ -86,41 +90,63 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
 
     func onKeyDown(key:String, code:String, ctrlKey:Bool, shiftKey:Bool, altKey:Bool, metaKey:Bool) {
         if computerIsActive {
-            switch code {
-            case "KeyI":
-                cameraIsRotating.up = true
-            case "KeyK":
-                cameraIsRotating.down = true
-            case "KeyJ":
-                cameraIsRotating.left = true
-            case "KeyL":
-                cameraIsRotating.right = true
-            case "KeyW":
-                cameraIsMoving.forward = true
-            case "KeyS":
-                cameraIsMoving.backward = true
-            case "KeyA":
-                cameraIsMoving.left = true
-            case "KeyD":
-                cameraIsMoving.right = true
-            case "KeyZ":
-                cameraIsMoving.down = true
-            case "KeyC":
-                cameraIsMoving.up = true
-            case "ShiftLeft":
-                cameraIsSprinting = true
-            case "KeyR":
-                cameraIsRotating.up = false
-                cameraIsRotating.down = false
-                cameraIsRotating.left = false
-                cameraIsRotating.right = false
-                cameraIsMoving.left = false
-                cameraIsMoving.right = false
-                cameraIsMoving.down = false
-                cameraIsMoving.up = false
-                cameraIsSprinting = false
-            default:
-                print("", terminator:"")
+            if !typing {
+                switch code {
+                case "KeyI":
+                    cameraIsRotating.up = true
+                case "KeyK":
+                    cameraIsRotating.down = true
+                case "KeyJ":
+                    cameraIsRotating.left = true
+                case "KeyL":
+                    cameraIsRotating.right = true
+                case "KeyW":
+                    cameraIsMoving.forward = true
+                case "KeyS":
+                    cameraIsMoving.backward = true
+                case "KeyA":
+                    cameraIsMoving.left = true
+                case "KeyD":
+                    cameraIsMoving.right = true
+                case "KeyZ":
+                    cameraIsMoving.down = true
+                case "KeyC":
+                    cameraIsMoving.up = true
+                case "ShiftLeft":
+                    cameraIsSprinting = true
+                case "KeyR":
+                    cameraIsRotating.up = false
+                    cameraIsRotating.down = false
+                    cameraIsRotating.left = false
+                    cameraIsRotating.right = false
+                    cameraIsMoving.left = false
+                    cameraIsMoving.right = false
+                    cameraIsMoving.down = false
+                    cameraIsMoving.up = false
+                    cameraIsSprinting = false
+                case "Slash":
+                    typing = true
+                default:
+                    Void()
+                }
+            } else {
+                //input
+                switch key {
+                case "Backspace":
+                    command = String(command.dropLast())
+                case "Escape":
+                    command = ""
+                    typing = false
+                case "Enter":
+                    BackgroundLayer.chat.input("\(username): \(command)")
+                    
+                    command = ""
+                    typing = false
+                default:
+                    if !shiftKey && !ctrlKey && !altKey {
+                        command.append(key)
+                    }
+                }
             }
         } else {
             switch key {
@@ -138,31 +164,33 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
 
     func onKeyUp(key:String, code:String, ctrlKey:Bool, shiftKey:Bool, altKey:Bool, metaKey:Bool) {
         if computerIsActive {
-            switch code {
-            case "KeyI":
-                cameraIsRotating.up = false
-            case "KeyK":
-                cameraIsRotating.down = false
-            case "KeyJ":
-                cameraIsRotating.left = false
-            case "KeyL":
-                cameraIsRotating.right = false
-            case "KeyW":
-                cameraIsMoving.forward = false
-            case "KeyS":
-                cameraIsMoving.backward = false
-            case "KeyA":
-                cameraIsMoving.left = false
-            case "KeyD":
-                cameraIsMoving.right = false
-            case "KeyZ":
-                cameraIsMoving.down = false
-            case "KeyC":
-                cameraIsMoving.up = false
-            case "ShiftLeft":
-                cameraIsSprinting = false
-            default:
-                print("", terminator:"")
+            if !typing {
+                switch code {
+                case "KeyI":
+                    cameraIsRotating.up = false
+                case "KeyK":
+                    cameraIsRotating.down = false
+                case "KeyJ":
+                    cameraIsRotating.left = false
+                case "KeyL":
+                    cameraIsRotating.right = false
+                case "KeyW":
+                    cameraIsMoving.forward = false
+                case "KeyS":
+                    cameraIsMoving.backward = false
+                case "KeyA":
+                    cameraIsMoving.left = false
+                case "KeyD":
+                    cameraIsMoving.right = false
+                case "KeyZ":
+                    cameraIsMoving.down = false
+                case "KeyC":
+                    cameraIsMoving.up = false
+                case "ShiftLeft":
+                    cameraIsSprinting = false
+                default:
+                    print("", terminator:"")
+                }
             }
         }
     }
@@ -226,6 +254,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(8/BackgroundLayer.computerCount)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:90), text:"Currently Loaded Regions: \(BackgroundLayer.background.loadedRegions())", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
+                BackgroundLayer.chat.render(canvas:canvas)
             }
         } else {
             clearCanvas(canvas:canvas)
