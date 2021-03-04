@@ -44,8 +44,12 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
         BackgroundLayer.usernames.append(username)
 
         computerIsActive = true
+
+        let spawnLocation = (x:Int.random(in:-14...14), y:Int.random(in:-14...14))
+
+        let spawnHeight = 32 + Int(8.0*(+Noise(x:spawnLocation.x, z:spawnLocation.y, seed:BackgroundLayer.seed)))
         
-        BackgroundLayer.cameras[thisComputer].move(x:-1, y:32, z:-1)
+        BackgroundLayer.cameras[thisComputer].move(x:Double(spawnLocation.x)+0.5, y:Double(spawnHeight)+2.0, z:Double(spawnLocation.y)+0.5)
     }
     
     override func preSetup(canvasSize:Size, canvas:Canvas) {

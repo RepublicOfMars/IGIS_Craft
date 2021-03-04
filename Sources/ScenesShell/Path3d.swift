@@ -16,7 +16,7 @@ class Path3d {
         Points3d.append(Point3d)
     }
 
-    func flatten(camera:Camera, canvas:Canvas) -> Path { //flattens path to 2d (for rendering)
+    func flatten(camera:Camera, canvas:Canvas, solid:Bool=true) -> Path { //flattens path to 2d (for rendering)
         var Points2d : [Point] = []
         for index in 0 ..< Points3d.count {
             if let point = Points3d[index].flatten(camera:camera, canvas:canvas) {
@@ -24,7 +24,10 @@ class Path3d {
             }
         }
 
-        let path = Path(fillMode:.fillAndStroke)
+        var path = Path(fillMode:.fillAndStroke)
+        if !solid {
+            path = Path(fillMode:.stroke)
+        }
 
         for index in 0 ..< Points2d.count {
             path.lineTo(Points2d[index])
@@ -33,7 +36,7 @@ class Path3d {
         return path
     }
 
-    func renderPath(camera:Camera, canvas:Canvas, color:Color) {
+    func renderPath(camera:Camera, canvas:Canvas, color:Color, solid:Bool=true) {
         var subtraction : (red:UInt8, green:UInt8, blue:UInt8) = (red:0, green:0, blue:0)
         if color.red >= 8 {
             subtraction.red = 8
@@ -47,6 +50,6 @@ class Path3d {
         
         canvas.render(StrokeStyle(color:Color(red:color.red-subtraction.red, green:color.green-subtraction.green, blue:color.blue-subtraction.blue)))
         canvas.render(FillStyle(color:color))
-        canvas.render(self.flatten(camera:camera, canvas:canvas))
+        canvas.render(self.flatten(camera:camera, canvas:canvas, solid:solid))
     }
 }

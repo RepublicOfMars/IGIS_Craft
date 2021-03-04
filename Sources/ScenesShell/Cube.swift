@@ -13,12 +13,12 @@ class Cube {
     func getSquares() -> [Square] { //get squares for sides of the cube
         var sides : [Square] = []
 
-        sides.append(Square(center:Point3d(x:center.x+(size/2),y:center.y,z:center.z), axis:"x"))
-        sides.append(Square(center:Point3d(x:center.x-(size/2),y:center.y,z:center.z), axis:"x"))
-        sides.append(Square(center:Point3d(x:center.x,y:center.y+(size/2),z:center.z), axis:"y"))
-        sides.append(Square(center:Point3d(x:center.x,y:center.y-(size/2),z:center.z), axis:"y"))
-        sides.append(Square(center:Point3d(x:center.x,y:center.y,z:center.z+(size/2)), axis:"z"))
-        sides.append(Square(center:Point3d(x:center.x,y:center.y,z:center.z-(size/2)), axis:"z"))
+        sides.append(Square(center:Point3d(x:center.x+(size/2),y:center.y,z:center.z), axis:"x", size:size))
+        sides.append(Square(center:Point3d(x:center.x-(size/2),y:center.y,z:center.z), axis:"x", size:size))
+        sides.append(Square(center:Point3d(x:center.x,y:center.y+(size/2),z:center.z), axis:"y", size:size))
+        sides.append(Square(center:Point3d(x:center.x,y:center.y-(size/2),z:center.z), axis:"y", size:size))
+        sides.append(Square(center:Point3d(x:center.x,y:center.y,z:center.z+(size/2)), axis:"z", size:size))
+        sides.append(Square(center:Point3d(x:center.x,y:center.y,z:center.z-(size/2)), axis:"z", size:size))
 
         return sides
     }
@@ -33,13 +33,13 @@ class Cube {
         sortingSquares = mergeSort(sortingSquares, by:workingArray) as! [Square]
     }
 
-    func renderCube(camera:Camera, canvas:Canvas, color:Color) {
+    func renderCube(camera:Camera, canvas:Canvas, color:Color, solid:Bool=true) {
         var sides = self.getSquares()
         
         sortByDistance(&sides, camera:camera)
         
         for square in sides {
-            square.renderSquare(camera:camera, canvas:canvas, color:color)
+            square.renderSquare(camera:camera, canvas:canvas, color:color, solid:solid)
         }
     }
 }

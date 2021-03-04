@@ -17,8 +17,8 @@ class Background : RenderableEntity {
         
         print("Regions to Generate: \(totalRegions)...")
         for y in 0 ..< worldSize.y {
-            for x in 0 ..< worldSize.x {
-                for z in 0 ..< worldSize.z {
+            for x in -worldSize.x/2 ..< worldSize.x/2 {
+                for z in -worldSize.z/2 ..< worldSize.z/2 {
                     Background.world.addRegion(kiloChunk(location:BlockPoint3d(x:x, y:y, z:z), kiloChunkSize:4, seed:seed))
                     regionsGenerated += 1
                     print("\(regionsGenerated)/\(totalRegions): Region Generated at x:\(x*16), y:\(y*16), z:\(z*16)")

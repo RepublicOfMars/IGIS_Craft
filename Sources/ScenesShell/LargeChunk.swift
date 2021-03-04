@@ -27,9 +27,9 @@ class kiloChunk {
     }
 
     func center() -> Point3d {
-        return Point3d(x:Double(location.x*(kiloChunkSize*kiloChunkSize)+kiloChunkSize/2),
-                       y:Double(location.y*(kiloChunkSize*kiloChunkSize)+kiloChunkSize/2),
-                       z:Double(location.z*(kiloChunkSize*kiloChunkSize)+kiloChunkSize/2))
+        return Point3d(x:Double(location.x*(16)+8),
+                       y:Double(location.y*(16)+8),
+                       z:Double(location.z*(16)+8))
     }
 
     func getChunkArray() -> [Chunk] {
@@ -53,5 +53,9 @@ class kiloChunk {
         }
 
         return mergeSort(output, by:workingArray) as! [Chunk]
+    }
+
+    func renderBounds(canvas:Canvas, camera:Camera) {
+        Cube(center:self.center(), size:16).renderCube(camera:camera, canvas:canvas, color:Color(red:0, green:0, blue:0), solid:false)
     }
 }

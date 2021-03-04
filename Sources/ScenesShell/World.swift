@@ -82,7 +82,7 @@ class World {
             var blocksRendered = 0
             var index = 0
             
-            while blocksRendered < renderDistance && index < renderDistance*3 {
+            while blocksRendered < renderDistance && index < renderDistance*4 {
                 if sorted[index].type != "air" {
                     nearest.append(sorted[index])
                     blocksRendered += 1
@@ -94,53 +94,11 @@ class World {
                 block.renderBlock(camera:camera, canvas:canvas)
             }
         }
-    }
-
-    func updateLoadedRegions(camera:Camera) {
-        let cameraLocation = BlockPoint3d(x:Int(camera.x), y:Int(camera.y), z:Int(camera.z))
-
-        var regionsToLoad:[Int] = []
-        var regionsToUnload:[Int] = []
-
-        let loadingRange = 12
-        
-        for index in 0 ..< regions.count {
-            if regions[index].location.x*(regionSize*regionSize)+(regionSize*regionSize)/2 >= cameraLocation.x+loadingRange ||
-                 regions[index].location.x*(regionSize*regionSize)+(regionSize*regionSize)/2 <= cameraLocation.x-loadingRange ||
-                 regions[index].location.y*(regionSize*regionSize)+(regionSize*regionSize)/2 >= cameraLocation.y+loadingRange ||
-                 regions[index].location.y*(regionSize*regionSize)+(regionSize*regionSize)/2 <= cameraLocation.y-loadingRange ||
-                 regions[index].location.z*(regionSize*regionSize)+(regionSize*regionSize)/2 >= cameraLocation.z+loadingRange ||
-                 regions[index].location.z*(regionSize*regionSize)+(regionSize*regionSize)/2 <= cameraLocation.z-loadingRange {
-                //if a chunk is out of loading range it will unload
-                regionsToUnload.append(index)
-            }
+        /*
+        regions.forEach {
+            $0.renderBounds(canvas:canvas, camera:camera)
         }
-
-        var regionsUnloaded = 0
-        for unloadingIndex in regionsToUnload {
-            unloadedRegions.append(regions[unloadingIndex-regionsUnloaded])
-            regions.remove(at:unloadingIndex-regionsUnloaded)
-            regionsUnloaded += 1
-        }
-
-        for index in 0 ..< unloadedRegions.count {
-            if unloadedRegions[index].location.x*(regionSize*regionSize)+(regionSize*regionSize)/2 >= cameraLocation.x-loadingRange &&
-                 unloadedRegions[index].location.x*(regionSize*regionSize)+(regionSize*regionSize)/2 <= cameraLocation.x+loadingRange &&
-                 unloadedRegions[index].location.y*(regionSize*regionSize)+(regionSize*regionSize)/2 >= cameraLocation.y-loadingRange &&
-                 unloadedRegions[index].location.y*(regionSize*regionSize)+(regionSize*regionSize)/2 <= cameraLocation.y+loadingRange &&
-                 unloadedRegions[index].location.z*(regionSize*regionSize)+(regionSize*regionSize)/2 >= cameraLocation.z-loadingRange &&
-                 unloadedRegions[index].location.z*(regionSize*regionSize)+(regionSize*regionSize)/2 <= cameraLocation.z+loadingRange {
-                //if an unloaded chunk is within loading range it will load
-                regionsToLoad.append(index)
-            }
-        }
-
-        var regionsLoaded = 0
-        for loadingIndex in regionsToLoad {
-            regions.append(unloadedRegions[loadingIndex-regionsLoaded])
-            unloadedRegions.remove(at:loadingIndex-regionsLoaded)
-            regionsLoaded += 1
-        }
+        */
     }
 
     func loadedRegions() -> Int {
@@ -148,18 +106,31 @@ class World {
     }
 
     private func unloadAll() {
-        for region in regions {
-            unloadedRegions.append(region)
+        regions.forEach {
+            unloadedRegions.append($0)
         }
 
         regions = []
     }
-
-    /*
-    func sortByDistance(camera:Camera) -> [kiloChunk] {
-        unloadAll()
-        var output : kiloChunk = unloadedRegions
-    }
     
-     */
+    func updateLoadedRegions(camera:Camera) {
+        unloadAll()
+        let unsortedRegions : [kiloChunk] = unloadedRegions
+
+        var workingArray : [Double] = []
+        unsortedRegions.forEach {
+            workingArray.append($0.center().distanceFrom(point:Point3d(x:camera.x, y:camera.y, z:camera.z)))
+        }
+
+        var sortedRegions = mergeSort(unsortedRegions, by:workingArray) as! [kiloChunk]
+        sortedRegions = sortedRegions.reversed()
+        let maxLoad = 2
+
+        for _ in 0 ..< maxLoad {
+            regions.append(sortedRegions[0])
+            sortedRegions.remove(at:0)
+        }
+
+        unloadedRegions = sortedRegions
+    }
 }
