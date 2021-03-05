@@ -40,7 +40,6 @@ class World {
                 output = kiloChunk
             }
         }
-
         return output
     }
 
@@ -49,25 +48,21 @@ class World {
         if let kiloChunk = getKiloChunk(at:BlockPoint3d(x:at.x/regionSize,
                                                         y:at.y/regionSize,
                                                         z:at.z/regionSize)) {
-            for chunk in kiloChunk.getChunkArray() {
-                if chunk.location.isEqual(to:at) {
-                    output = chunk
-                }
+            if let chunk = kiloChunk.getChunk(at:at) {
+                output = chunk
             }
-        }
+        } 
 
         return output
     }
 
     func getBlock(at:BlockPoint3d) -> Block? {
         var output : Block? = nil
-        if let chunk = getChunk(at:BlockPoint3d(x:at.x/regionSize,
-                                                y:at.y/regionSize,
-                                                z:at.z/regionSize)) {
-            for block in chunk.getBlockArray() {
-                if block.location.isEqual(to:at) {
-                    output = block
-                }
+        if let kiloChunk = getKiloChunk(at:BlockPoint3d(x:at.x/16,
+                                                        y:at.y/16,
+                                                        z:at.z/16)) {
+            if let block = kiloChunk.getBlock(at:at) {
+                output = block
             }
         }
         return output
@@ -94,11 +89,6 @@ class World {
                 block.renderBlock(camera:camera, canvas:canvas)
             }
         }
-        /*
-        regions.forEach {
-            $0.renderBounds(canvas:canvas, camera:camera)
-        }
-        */
     }
 
     func loadedRegions() -> Int {

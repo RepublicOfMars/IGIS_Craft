@@ -85,3 +85,7 @@ private func hypotenuse(_ a: Double, _ b: Double) -> Double {
 public func Noise(x:Int, z:Int, seed:Int=0) -> Double {
     return Perlin(x:Double(x+2048)/32, y:Double(seed), z:Double(z+2048)/32)
 }
+
+public func Noise3d(x:Int, y:Int, z:Int) -> Double {
+    return Perlin(x:Double(x-2048)/16, y:Double(y-2048)/16, z:Double(z+2048)/16)
+}

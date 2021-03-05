@@ -58,4 +58,23 @@ class kiloChunk {
     func renderBounds(canvas:Canvas, camera:Camera) {
         Cube(center:self.center(), size:16).renderCube(camera:camera, canvas:canvas, color:Color(red:0, green:0, blue:0), solid:false)
     }
+
+    func getChunk(at:BlockPoint3d) -> Chunk? {
+        var output : Chunk? = nil
+        getChunkArray().forEach {
+            if $0.location.isEqual(to:at) {
+                output = $0
+            }
+        }
+        return output
+    }
+
+    func getBlock(at:BlockPoint3d) -> Block? {
+        let chunkLocation = BlockPoint3d(x:at.x/kiloChunkSize, y:at.y/kiloChunkSize, z:at.z/kiloChunkSize)
+        var output : Block? = nil
+        if let chunk = getChunk(at:chunkLocation) {
+            output = chunk.getBlock(at:at)
+        }
+        return output
+    }
 }
