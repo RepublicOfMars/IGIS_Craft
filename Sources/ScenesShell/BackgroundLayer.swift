@@ -49,11 +49,11 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
 
         computerIsActive = true
 
-        let spawnLocation = (x:Int.random(in:-14...14), y:Int.random(in:-14...14))
+        let spawnLocation = (x:Int.random(in:0..<16*BackgroundLayer.background.worldSize.x), z:Int.random(in:0..<16*BackgroundLayer.background.worldSize.x))
 
-        let spawnHeight = 32 + Int(8.0*(+Noise(x:spawnLocation.x, z:spawnLocation.y, seed:BackgroundLayer.seed)))
+        let spawnHeight = 32 + Int(8.0*(+Noise(x:spawnLocation.x, z:spawnLocation.z, seed:BackgroundLayer.seed)))
         
-        BackgroundLayer.cameras[thisComputer].move(x:Double(spawnLocation.x)+0.5, y:Double(spawnHeight)+2.0, z:Double(spawnLocation.y)+0.5)
+        BackgroundLayer.cameras[thisComputer].move(x:Double(spawnLocation.x)+0.5, y:Double(spawnHeight)+2.0, z:Double(spawnLocation.z)+0.5)
     }
     
     override func preSetup(canvasSize:Size, canvas:Canvas) {
@@ -124,8 +124,11 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     cameraIsMoving.down = false
                     cameraIsMoving.up = false
                     cameraIsSprinting = false
+                case "Enter":
+                    typing = true
                 case "Slash":
                     typing = true
+                    command.append("/")
                 default:
                     Void()
                 }
@@ -138,8 +141,38 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     command = ""
                     typing = false
                 case "Enter":
-                    BackgroundLayer.chat.input("\(username): \(command)")
-                    
+                    let arguments = command.split(separator : " ")
+
+                    switch arguments[0] {
+                    case "/tp":
+                        if arguments.count == 4 {
+                            if let x = Double(arguments[1]), let y = Double(arguments[2]), let z = Double(arguments[3]) {
+                                BackgroundLayer.cameras[thisComputer].x = x
+                                BackgroundLayer.cameras[thisComputer].y = y
+                                BackgroundLayer.cameras[thisComputer].z = z
+
+                                BackgroundLayer.chat.input("Teleported '\(username)' to \(Int(x)), \(Int(y)), \(Int(z))")
+                            }
+                        }
+                        
+                        if arguments.count == 5 {
+                            if let x = Double(arguments[2]), let y = Double(arguments[3]), let z = Double(arguments[4]) {
+                                if BackgroundLayer.usernames.contains(String(arguments[1])) {
+                                    for user in 0 ..< BackgroundLayer.usernames.count {
+                                        if BackgroundLayer.usernames[user] == String(arguments[1]) {
+                                            BackgroundLayer.cameras[user].x = x
+                                            BackgroundLayer.cameras[user].y = y
+                                            BackgroundLayer.cameras[user].z = z
+                                            
+                                            BackgroundLayer.chat.input("'\(username)' teleported '\(BackgroundLayer.usernames[user])' to \(Int(x)), \(Int(y)), \(Int(z))")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    default:
+                        BackgroundLayer.chat.input("\(username): \(command)")
+                    }
                     command = ""
                     typing = false
                 default:
@@ -189,7 +222,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 case "ShiftLeft":
                     cameraIsSprinting = false
                 default:
-                    print("", terminator:"")
+                    do {}
                 }
             }
         }

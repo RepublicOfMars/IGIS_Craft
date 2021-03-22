@@ -3,7 +3,7 @@ import Scenes
 
 class Chat {
     private var text : [String]
-    private let maxLines = 6
+    private let maxLines = 12
     init() {
         text = []
         for _ in 0 ..< maxLines {

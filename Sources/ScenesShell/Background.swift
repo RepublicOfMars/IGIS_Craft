@@ -39,48 +39,31 @@ class generatingMap {
 
 class Background : RenderableEntity {
     static var world = World()
+    public let worldSize = (x:16, y:4, z:16)
 
     init(seed:Int=0) {
         // Using a meaningful name can be helpful for debugging
-        let worldSize = (x:16, y:4, z:16)
         let totalRegions = worldSize.x * worldSize.y * worldSize.z
         var regionsGenerated = 0
 
-        let loading = generatingMap(x:worldSize.x, z:worldSize.z)
+        //let loading = generatingMap(x:worldSize.x, z:worldSize.z)
         
         print("Regions to Generate: \(totalRegions)...")
-        for x in -worldSize.x/2 ..< worldSize.x/2 {
-            for z in -worldSize.z/2 ..< worldSize.z/2 {
+        for x in 0 ..< worldSize.x {
+            for z in 0 ..< worldSize.z {
                 for y in 0 ..< worldSize.y {
                     Background.world.addRegion(kiloChunk(location:BlockPoint3d(x:x, y:y, z:z), kiloChunkSize:4, seed:seed))
                     regionsGenerated += 1
                 }
-                
-                for subRegionX in 0 ... 1 {
-                    for subRegionZ in 0 ... 1 {
-                        let terrainHeight = Int(8.0*(+Noise(x:x*16+subRegionX*2, z:z*16+subRegionZ*2, seed:seed)))
-                        var mapString = "  "
-                        if terrainHeight >= 4 {
-                            mapString = "██"
-                        } else if terrainHeight >= 2 {
-                            mapString = "▓▓"
-                        } else if terrainHeight >= 0 {
-                            mapString = "▒▒"
-                        } else if terrainHeight >= -2 {
-                            mapString = "░░"
-                        }
-                        loading.changePixel(x:(x+worldSize.x/2)*2+(subRegionX), z:(z+worldSize.z/2)*2+(subRegionZ), to:mapString)
-                    }
-                }
-                loading.render()
+                print("generated region at: \(x), \(z)")
                 print("\((regionsGenerated*100)/totalRegions)%")
             }
         }
         print("World Generated. Size: x:\(worldSize.x*16), y:\(worldSize.y*16), z:\(worldSize.z*16)")
         print("World Bounds: ")
-        print("x: \(-(worldSize.x/2)*16), \((worldSize.x/2)*16)")
-        print("y: 0, \((worldSize.y*16))")
-        print("z: \(-(worldSize.z/2)*16), \((worldSize.z/2)*16)")
+        print("x: \(0), \(worldSize.x*16)")
+        print("y: \(0), \((worldSize.y*16))")
+        print("z: \(0), \(worldSize.z*16)")
         
         super.init(name:"Background")
     }

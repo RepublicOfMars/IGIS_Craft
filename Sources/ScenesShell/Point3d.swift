@@ -34,7 +34,7 @@ class Point3d {
 
         return relativePosFinal
     }
-
+    
     func flatten(camera:Camera, canvas:Canvas) -> Point? { //converts the 3d Point to an IGIS Point for rendering
         let canvasSize = canvas.canvasSize!
         let relativeLocation = self.relativeLocation(camera:camera)

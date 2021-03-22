@@ -58,9 +58,21 @@ class World {
 
     func getBlock(at:BlockPoint3d) -> Block? {
         var output : Block? = nil
-        if let kiloChunk = getKiloChunk(at:BlockPoint3d(x:at.x/16,
-                                                        y:at.y/16,
-                                                        z:at.z/16)) {
+        let location = BlockPoint3d(x:at.x/16,
+                                    y:at.y/16,
+                                    z:at.z/16)
+
+        if at.x < 0 {
+            location.x -= 1
+        }
+        if at.y < 0 {
+            location.y -= 1
+        }
+        if at.z < 0 {
+            location.z -= 1
+        }
+        
+        if let kiloChunk = getKiloChunk(at:location) {
             if let block = kiloChunk.getBlock(at:at) {
                 output = block
             }

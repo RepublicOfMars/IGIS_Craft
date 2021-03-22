@@ -27,9 +27,7 @@ class Chunk {
                                                z:z+(self.location.z*self.chunkSize)))
                     var type = "air"
                     if cave > -4 {
-                        if y + self.location.y*self.chunkSize <= 0 {
-                            type = "bedrock"
-                        } else if y + self.location.y*self.chunkSize <= terrainHeight-3 {
+                        if y + self.location.y*self.chunkSize <= terrainHeight-3 {
                             type = "stone"
                             if y + self.location.y*self.chunkSize <= 8 && Int.random(in:1...128) == 1 {
                                 type = "diamond_ore"
@@ -44,6 +42,10 @@ class Chunk {
                         }
                     }
                     
+                    if y + self.location.y*self.chunkSize <= 0 {
+                        type = "bedrock"
+                    }
+                    
                     Blocks[y][x].append(Block(location:BlockPoint3d(x:x+(location.x*chunkSize),
                                                                     y:y+(location.y*chunkSize),
                                                                     z:z+(location.z*chunkSize)),
@@ -52,7 +54,7 @@ class Chunk {
             }
         }
     }
-
+    
     func distanceToCenter(camera:Camera) -> Double {
         return Point3d(x:Double(self.location.x+(chunkSize/2)),
                        y:Double(self.location.y+(chunkSize/2)),
