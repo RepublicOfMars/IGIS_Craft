@@ -39,10 +39,15 @@ class generatingMap {
 
 class Background : RenderableEntity {
     static var world = World()
+    static var seed : Int = 0
     public let worldSize = (x:16, y:4, z:16)
+
+    var generated = false
+    var generatingRegion = (x:0, y:0, z:0)
 
     init(seed:Int=0) {
         // Using a meaningful name can be helpful for debugging
+        Background.seed = seed
         let totalRegions = worldSize.x * worldSize.y * worldSize.z
         var regionsGenerated = 0
 
@@ -66,6 +71,10 @@ class Background : RenderableEntity {
         print("z: \(0), \(worldSize.z*16)")
         
         super.init(name:"Background")
+    }
+
+    func stepGeneration() {
+        Background.world.addRegion(kiloChunk(location:BlockPoint3d(x:0, y:0, z:0), kiloChunkSize:4, seed:seed))
     }
 
     func renderWorld(camera:Camera, canvas:Canvas) {

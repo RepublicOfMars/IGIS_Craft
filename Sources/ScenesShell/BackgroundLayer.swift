@@ -27,7 +27,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     var command = ""
     
     var cameraIsRotating = (up:false, down:false, left:false, right:false)
-    var cameraIsMoving = (forward:false, backward:false, left:false, right:false, up:false, down:false)
+    var cameraVelocity = (forward:0.0, left:0.0, up:0.0)
     var cameraIsSprinting = false
     var cameraIsFlying = true
     
@@ -53,7 +53,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
 
         let spawnHeight = 32 + Int(8.0*(+Noise(x:spawnLocation.x, z:spawnLocation.z, seed:BackgroundLayer.seed)))
         
-        BackgroundLayer.cameras[thisComputer].move(x:Double(spawnLocation.x)+0.5, y:Double(spawnHeight)+2.0, z:Double(spawnLocation.z)+0.5)
+        BackgroundLayer.cameras[thisComputer].move(x:Double(spawnLocation.x)+0.5, y:Double(spawnHeight)+3.0, z:Double(spawnLocation.z)+0.5)
     }
     
     override func preSetup(canvasSize:Size, canvas:Canvas) {
@@ -62,7 +62,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     }
 
     override func preCalculate(canvas:Canvas) {
-        if computerIsActive {
+        if computerIsActive && BackgroundLayer.renderingComputer == thisComputer {
             var multiplier = 1.0
             if cameraIsSprinting{multiplier = 2}
             
@@ -70,16 +70,59 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             if cameraIsRotating.down{BackgroundLayer.cameras[thisComputer].cameraRotateDown()}
             if cameraIsRotating.left{BackgroundLayer.cameras[thisComputer].cameraRotateLeft()}
             if cameraIsRotating.right{BackgroundLayer.cameras[thisComputer].cameraRotateRight()}
-            
-            if cameraIsMoving.forward{BackgroundLayer.cameras[thisComputer].cameraForward(multiplier)}
-            if cameraIsMoving.backward{BackgroundLayer.cameras[thisComputer].cameraBackward(multiplier)}
-            if cameraIsMoving.left{BackgroundLayer.cameras[thisComputer].cameraLeft(multiplier)}
-            if cameraIsMoving.right{BackgroundLayer.cameras[thisComputer].cameraRight(multiplier)}
-            
-            if cameraIsFlying{
-                if cameraIsMoving.up{BackgroundLayer.cameras[thisComputer].cameraUp(multiplier)}
-                if cameraIsMoving.down{BackgroundLayer.cameras[thisComputer].cameraDown(multiplier)}
+
+            cameraVelocity.up -= 0.2
+
+            var collisionAdder = (up:0.5, forward:0.5, left:0.5)
+
+            if cameraVelocity.forward < 0 {
+                collisionAdder.forward = -0.5
             }
+            if cameraVelocity.left < 0 {
+                collisionAdder.left = -0.5
+            }
+            if cameraVelocity.up < 0 {
+                collisionAdder.up = -1.5
+            }
+            
+            if let VerticalCollisionBlock = Background.world.getBlock(at:BlockPoint3d(x:Int(BackgroundLayer.cameras[thisComputer].x),
+                                                                                      y:Int(BackgroundLayer.cameras[thisComputer].y+cameraVelocity.up+collisionAdder.up),
+                                                                                      z:Int(BackgroundLayer.cameras[thisComputer].z))) {
+                
+                if VerticalCollisionBlock.type == "air" {
+                    BackgroundLayer.cameras[thisComputer].cameraUp(cameraVelocity.up)
+                } else {
+                    var BlockCollisionAdder = 1.0
+                    if cameraVelocity.up > 0 {BlockCollisionAdder = -1.0}
+                    
+                    let relativePosition = (BackgroundLayer.cameras[thisComputer].y+collisionAdder.up) - (Double(VerticalCollisionBlock.location.y)+BlockCollisionAdder)
+                    BackgroundLayer.cameras[thisComputer].cameraUp(-relativePosition)
+                    cameraVelocity.up = 0
+                }
+            } else {
+                BackgroundLayer.cameras[thisComputer].cameraUp(cameraVelocity.up)
+            }
+            
+            BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward * multiplier)
+            BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left * multiplier)
+            
+            /*
+            if let HorizontalCollisionBlock = Background.world.getBlock(at:BlockPoint3d(x:Int(BackgroundLayer.cameras[thisComputer].x+cameraVelocity.forward+collisionAdder.forward),
+                                                                                        y:Int(BackgroundLayer.cameras[thisComputer].y),
+                                                                                        z:Int(BackgroundLayer.cameras[thisComputer].z+cameraVelocity.left+collisionAdder.left))) {
+                
+                if HorizontalCollisionBlock.type == "air" {
+                    BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward * multiplier)
+                    BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left * multiplier)
+                } else {
+                    cameraVelocity.forward = 0
+                    cameraVelocity.left = 0
+                }
+            } else {
+                BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward * multiplier)
+                BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left * multiplier)
+            }
+             */
         }
     }
 
@@ -101,17 +144,15 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 case "KeyL":
                     cameraIsRotating.right = true
                 case "KeyW":
-                    cameraIsMoving.forward = true
+                    cameraVelocity.forward = 0.5
                 case "KeyS":
-                    cameraIsMoving.backward = true
+                    cameraVelocity.forward = -0.5
                 case "KeyA":
-                    cameraIsMoving.left = true
+                    cameraVelocity.left = 0.5
                 case "KeyD":
-                    cameraIsMoving.right = true
-                case "KeyZ":
-                    cameraIsMoving.down = true
-                case "KeyC":
-                    cameraIsMoving.up = true
+                    cameraVelocity.left = -0.5
+                case "Space":
+                    cameraVelocity.up += 1.8
                 case "ShiftLeft":
                     cameraIsSprinting = true
                 case "KeyR":
@@ -119,10 +160,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     cameraIsRotating.down = false
                     cameraIsRotating.left = false
                     cameraIsRotating.right = false
-                    cameraIsMoving.left = false
-                    cameraIsMoving.right = false
-                    cameraIsMoving.down = false
-                    cameraIsMoving.up = false
+                    cameraVelocity.forward = 0
+                    cameraVelocity.left = 0
+                    cameraVelocity.up = 0
                     cameraIsSprinting = false
                 case "Enter":
                     typing = true
@@ -208,17 +248,13 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 case "KeyL":
                     cameraIsRotating.right = false
                 case "KeyW":
-                    cameraIsMoving.forward = false
+                    cameraVelocity.forward = 0
                 case "KeyS":
-                    cameraIsMoving.backward = false
+                    cameraVelocity.forward = 0
                 case "KeyA":
-                    cameraIsMoving.left = false
+                    cameraVelocity.left = 0
                 case "KeyD":
-                    cameraIsMoving.right = false
-                case "KeyZ":
-                    cameraIsMoving.down = false
-                case "KeyC":
-                    cameraIsMoving.up = false
+                    cameraVelocity.left = 0
                 case "ShiftLeft":
                     cameraIsSprinting = false
                 default:
@@ -258,11 +294,16 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 canvas.render(FillStyle(color:Color(red:128, green:128, blue:128)))
                 
                 BackgroundLayer.background.renderWorld(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas)
-
+                
                 for player in 0 ..< BackgroundLayer.computerCount {
                     if player != thisComputer {
                         if let playerLocation = BackgroundLayer.cameras[player].getLocation().flatten(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas) {
                             Cube(center:BackgroundLayer.cameras[player].getLocation()).renderCube(camera:BackgroundLayer.cameras[thisComputer],
+                                                                                                  canvas:canvas,
+                                                                                                  color:Color(red:164, green:164, blue:164))
+                            Cube(center:Point3d(x:BackgroundLayer.cameras[player].getLocation().x,
+                                                y:BackgroundLayer.cameras[player].getLocation().y-1.0,
+                                                z:BackgroundLayer.cameras[player].getLocation().z)).renderCube(camera:BackgroundLayer.cameras[thisComputer],
                                                                                                   canvas:canvas,
                                                                                                   color:Color(red:164, green:164, blue:164))
                             let playerText = Text(location:playerLocation, text:BackgroundLayer.usernames[player])

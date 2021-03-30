@@ -121,7 +121,7 @@ class World {
 
         var workingArray : [Double] = []
         unsortedRegions.forEach {
-            workingArray.append($0.center().distanceFrom(point:Point3d(x:camera.x, y:camera.y, z:camera.z)))
+            workingArray.append($0.center().distanceFrom(point:Point3d(x:camera.x, y:camera.y-2.0, z:camera.z)))
         }
 
         var sortedRegions = mergeSort(unsortedRegions, by:workingArray) as! [kiloChunk]
