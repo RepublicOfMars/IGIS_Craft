@@ -62,7 +62,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     }
 
     override func preCalculate(canvas:Canvas) {
-        if computerIsActive && BackgroundLayer.renderingComputer == thisComputer {
+        if computerIsActive && BackgroundLayer.renderingComputer == thisComputer && Background.generated {
             var multiplier = 1.0
             if cameraIsSprinting{multiplier = 2}
             
@@ -288,52 +288,57 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 
                 canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
                 canvas.render(FillStyle(color:Color(red:128, green:128, blue:196)))
+                if !Background.generated {
+                    canvas.render(FillStyle(color:Color(red:128, green:64, blue:32)))
+                }
                 canvas.render(sky)
                 
                 canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
                 canvas.render(FillStyle(color:Color(red:128, green:128, blue:128)))
                 
                 BackgroundLayer.background.renderWorld(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas)
-                
-                for player in 0 ..< BackgroundLayer.computerCount {
-                    if player != thisComputer {
-                        if let playerLocation = BackgroundLayer.cameras[player].getLocation().flatten(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas) {
-                            Cube(center:BackgroundLayer.cameras[player].getLocation()).renderCube(camera:BackgroundLayer.cameras[thisComputer],
-                                                                                                  canvas:canvas,
-                                                                                                  color:Color(red:164, green:164, blue:164))
-                            Cube(center:Point3d(x:BackgroundLayer.cameras[player].getLocation().x,
-                                                y:BackgroundLayer.cameras[player].getLocation().y-1.0,
-                                                z:BackgroundLayer.cameras[player].getLocation().z)).renderCube(camera:BackgroundLayer.cameras[thisComputer],
-                                                                                                  canvas:canvas,
-                                                                                                  color:Color(red:164, green:164, blue:164))
-                            let playerText = Text(location:playerLocation, text:BackgroundLayer.usernames[player])
-                            playerText.alignment = .center
-                            playerText.font = "8ptArial"
-                            canvas.render(FillStyle(color:Color(red:196, green:196, blue:196)))
-                            canvas.render(playerText)
+
+                if Background.generated {
+                    for player in 0 ..< BackgroundLayer.computerCount {
+                        if player != thisComputer {
+                            if let playerLocation = BackgroundLayer.cameras[player].getLocation().flatten(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas) {
+                                Cube(center:BackgroundLayer.cameras[player].getLocation()).renderCube(camera:BackgroundLayer.cameras[thisComputer],
+                                                                                                      canvas:canvas,
+                                                                                                      color:Color(red:164, green:164, blue:164))
+                                Cube(center:Point3d(x:BackgroundLayer.cameras[player].getLocation().x,
+                                                    y:BackgroundLayer.cameras[player].getLocation().y-1.0,
+                                                    z:BackgroundLayer.cameras[player].getLocation().z)).renderCube(camera:BackgroundLayer.cameras[thisComputer],
+                                                                                                                   canvas:canvas,
+                                                                                                                   color:Color(red:164, green:164, blue:164))
+                                let playerText = Text(location:playerLocation, text:BackgroundLayer.usernames[player])
+                                playerText.alignment = .center
+                                playerText.font = "8ptArial"
+                                canvas.render(FillStyle(color:Color(red:196, green:196, blue:196)))
+                                canvas.render(playerText)
+                            }
+                            
                         }
-                        
                     }
+                    
+                    canvas.render(FillStyle(color:Color(red:0, green:0, blue:0)))
+                    let cameraPosText = Text(location:Point(x:20, y:20), text:"Camera Position:", fillMode:.fill)
+                    cameraPosText.alignment = .left
+                    cameraPosText.font = "8pt Arial"
+                    canvas.render(cameraPosText)
+                    canvas.render(Text(location:Point(x:20, y:30), text:"X: \(Int(BackgroundLayer.cameras[thisComputer].x))", fillMode:.fill))
+                    canvas.render(Text(location:Point(x:20, y:40), text:"Y: \(Int(BackgroundLayer.cameras[thisComputer].y))", fillMode:.fill))
+                    canvas.render(Text(location:Point(x:20, y:50), text:"Z: \(Int(BackgroundLayer.cameras[thisComputer].z))", fillMode:.fill))
+                    canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(BackgroundLayer.cameras[thisComputer].pitch)", fillMode:.fill))
+                    canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
+                    canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(8/BackgroundLayer.computerCount)", fillMode:.fill))
+                    canvas.render(Text(location:Point(x:20, y:90), text:"Currently Loaded Regions: \(BackgroundLayer.background.loadedRegions())", fillMode:.fill))
+                    if let currentBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(BackgroundLayer.cameras[thisComputer].x),
+                                                                                              y:Int(BackgroundLayer.cameras[thisComputer].y),
+                                                                                              z:Int(BackgroundLayer.cameras[thisComputer].z))) {
+                        canvas.render(Text(location:Point(x:20, y:100), text:"Current block: \(currentBlock.type)", fillMode:.fill))
+                    }
+                    canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
                 }
-                
-                canvas.render(FillStyle(color:Color(red:0, green:0, blue:0)))
-                let cameraPosText = Text(location:Point(x:20, y:20), text:"Camera Position:", fillMode:.fill)
-                cameraPosText.alignment = .left
-                cameraPosText.font = "8pt Arial"
-                canvas.render(cameraPosText)
-                canvas.render(Text(location:Point(x:20, y:30), text:"X: \(Int(BackgroundLayer.cameras[thisComputer].x))", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:40), text:"Y: \(Int(BackgroundLayer.cameras[thisComputer].y))", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:50), text:"Z: \(Int(BackgroundLayer.cameras[thisComputer].z))", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(BackgroundLayer.cameras[thisComputer].pitch)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(8/BackgroundLayer.computerCount)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:90), text:"Currently Loaded Regions: \(BackgroundLayer.background.loadedRegions())", fillMode:.fill))
-                if let currentBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(BackgroundLayer.cameras[thisComputer].x),
-                                                                                          y:Int(BackgroundLayer.cameras[thisComputer].y),
-                                                                                          z:Int(BackgroundLayer.cameras[thisComputer].z))) {
-                    canvas.render(Text(location:Point(x:20, y:100), text:"Current block: \(currentBlock.type)", fillMode:.fill))
-                }
-                canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
                 BackgroundLayer.chat.render(canvas:canvas)
             }
         } else {
