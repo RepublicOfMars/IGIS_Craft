@@ -31,39 +31,19 @@ class Background : RenderableEntity {
     public let worldSize = (x:16, y:4, z:16)
     let regionsToGenerate : Int
     static var regionsGenerated = 0
+    let splashTxt = splashText()
 
     public static var generated = false
     var generatingRegion = (x:0, y:0, z:0)
     var map : generatingMap
 
+    let pixelsPerRegion = 8
+
     init(seed:Int=0) {
         regionsToGenerate = worldSize.x * worldSize.y * worldSize.z
-        map = generatingMap(x:worldSize.x*4, z:worldSize.z*4)
+        map = generatingMap(x:worldSize.x*pixelsPerRegion, z:worldSize.z*pixelsPerRegion)
         // Using a meaningful name can be helpful for debugging
         Background.seed = seed
-        /*
-        let totalRegions = worldSize.x * worldSize.y * worldSize.z
-        var regionsGenerated = 0
-        
-        //let loading = generatingMap(x:worldSize.x, z:worldSize.z)
-        
-        print("Regions to Generate: \(totalRegions)...")
-        for x in 0 ..< worldSize.x {
-            for z in 0 ..< worldSize.z {
-                for y in 0 ..< worldSize.y {
-                    Background.world.addRegion(kiloChunk(location:BlockPoint3d(x:x, y:y, z:z), kiloChunkSize:4, seed:seed))
-                    regionsGenerated += 1
-                }
-                print("generated region at: \(x), \(z)")
-                print("\((regionsGenerated*100)/totalRegions)%")
-            }
-        }
-        print("World Generated. Size: x:\(worldSize.x*16), y:\(worldSize.y*16), z:\(worldSize.z*16)")
-        print("World Bounds: ")
-        print("x: \(0), \(worldSize.x*16)")
-        print("y: \(0), \((worldSize.y*16))")
-        print("z: \(0), \(worldSize.z*16)")
-         */
         super.init(name:"Background")
     }
 
@@ -72,10 +52,10 @@ class Background : RenderableEntity {
             Background.world.addRegion(kiloChunk(location:BlockPoint3d(x:generatingRegion.x, y:y, z:generatingRegion.z), kiloChunkSize:4, seed:Background.seed))
             Background.regionsGenerated += 1
 
-            for x in 0 ..< 4 {
-                for z in 0 ..< 4 {
-                    let height = Noise(x:(generatingRegion.x*16)+(x*4), z:(generatingRegion.z*16)+(z*4), seed:Background.seed)
-                    map.changePixel(x:(generatingRegion.x*4)+x, z:(generatingRegion.z*4)+z, to:32+Int(8*height))
+            for x in 0 ..< pixelsPerRegion {
+                for z in 0 ..< pixelsPerRegion {
+                    let height = Noise(x:(generatingRegion.x*16)+(x*(16/pixelsPerRegion)), z:(generatingRegion.z*16)+(z*(16/pixelsPerRegion)), seed:Background.seed)
+                    map.changePixel(x:(generatingRegion.x*(pixelsPerRegion))+x, z:(generatingRegion.z*(pixelsPerRegion))+z, to:32+Int(8*height))
                 }
             }
         }
@@ -88,23 +68,18 @@ class Background : RenderableEntity {
             Background.generated = true
         }
 
-        let regionMapSize = 4
+        let regionMapSize = pixelsPerRegion
         
         for x in 0 ..< map.map.count {
             for z in 0 ..< map.map[x].count {
-                canvas.render(FillStyle(color:Color(.black)))
-                if map.map[x][z] > 34 {
-                    canvas.render(FillStyle(color:Color(red:0, green:196, blue:0)))
-                } else if map.map[x][z] > 32 {
-                    canvas.render(FillStyle(color:Color(red:0, green:180, blue:0)))
-                } else if map.map[x][z] > 30 {
-                    canvas.render(FillStyle(color:Color(red:0, green:164, blue:0)))
-                } else if map.map[x][z] > 0 {
-                    canvas.render(FillStyle(color:Color(red:0, green:148, blue:0)))
+                if map.map[x][z] > 0 {
+                    canvas.render(FillStyle(color:Color(red:0, green:UInt8((map.map[x][z])*6), blue:128-UInt8((map.map[x][z])*2))))
+                } else {
+                    canvas.render(FillStyle(color:Color(.black)))
                 }
                 let center = Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2)
-                let offset = Point(x:4*((map.size.x/2)-x-1), y:4*((map.size.z/2)-z-1))
-                canvas.render(Rectangle(rect:Rect(topLeft:Point(x:center.x+offset.x, y:center.y+offset.y), size:Size(width:regionMapSize, height:regionMapSize)), fillMode:.fill))
+                let offset = Point(x:(16/pixelsPerRegion)*((map.size.x/2)-x-1), y:(16/pixelsPerRegion)*((map.size.z/2)-z-1))
+                canvas.render(Rectangle(rect:Rect(topLeft:Point(x:center.x+offset.x, y:center.y+offset.y), size:Size(width:16/regionMapSize, height:16/regionMapSize)), fillMode:.fill))
             }
         }
         
@@ -120,12 +95,33 @@ class Background : RenderableEntity {
             canvas.render(FillStyle(color:Color(.black)))
             canvas.render(text)
             
+            let generated = Text(location:Point(x:canvas.canvasSize!.width/2, y:25*(canvas.canvasSize!.height/32)), text:"(\(Background.regionsGenerated)/\(regionsToGenerate))")
+            generated.font = "\(canvas.canvasSize!.height/96)pt Arial"
+            generated.baseline = .middle
+            generated.alignment = .center
+            canvas.render(FillStyle(color:Color(.black)))
+            canvas.render(generated)
+            
             let title = Text(location:Point(x:canvas.canvasSize!.width/2, y:(canvas.canvasSize!.height/4)), text:"IGIS_Craft")
             title.font = "\(canvas.canvasSize!.height/16)pt Arial"
             title.baseline = .middle
             title.alignment = .center
             canvas.render(FillStyle(color:Color(.black)))
             canvas.render(title)
+
+            let splash = Text(location:Point(x:canvas.canvasSize!.width/2, y:(canvas.canvasSize!.height/4)+canvas.canvasSize!.height/16), text:splashTxt)
+            splash.font = "\((canvas.canvasSize!.height/64))pt Arial"
+            splash.baseline = .middle
+            splash.alignment = .center
+            canvas.render(FillStyle(color:Color(red:128, green:128, blue:0)))
+            canvas.render(splash)
+
+            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.0.9")
+            version.font = "\((canvas.canvasSize!.height/64))pt Arial"
+            version.baseline = .bottom
+            version.alignment = .left
+            canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
+            canvas.render(version)
         } else {
             Background.world.renderWorld(camera:camera, canvas:canvas)
         }
