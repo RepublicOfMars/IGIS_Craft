@@ -37,6 +37,10 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             firstComputer = true
             BackgroundLayer.playerJoined = true
         }
+        
+        BackgroundLayer.computerCount += 1
+        thisComputer = BackgroundLayer.computerCount - 1
+        
         // Using a meaningful name can be helpful for debugging
         super.init(name:"Background")
 
@@ -45,8 +49,6 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     }
 
     func initializeComputer() {
-        BackgroundLayer.computerCount += 1
-        thisComputer = BackgroundLayer.computerCount - 1
         BackgroundLayer.cameras.append(Camera())
         computerIsActive = true
 
@@ -279,6 +281,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                                                                                           y:Int(BackgroundLayer.cameras[thisComputer].y),
                                                                                           z:Int(BackgroundLayer.cameras[thisComputer].z))) {
                     canvas.render(Text(location:Point(x:20, y:100), text:"Current block: \(currentBlock.type)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:110), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
                 }
                 canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
             }
