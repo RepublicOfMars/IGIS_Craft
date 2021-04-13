@@ -6,6 +6,7 @@ class Block {
     var location : BlockPoint3d //negative corner of the block
     var color : Color
     var type : String
+    var selected = false
 
     init(location:BlockPoint3d, type:String) {
         self.location = location

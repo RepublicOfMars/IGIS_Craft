@@ -1,4 +1,6 @@
 import Foundation
+import Igis
+import Scenes
 
 private func AbsV(_ x: Int) -> Int {
     if x < 0 {
@@ -83,9 +85,38 @@ private func hypotenuse(_ a: Double, _ b: Double) -> Double {
 }
 
 public func Noise(x:Int, z:Int, seed:Int=0) -> Double {
-    return Perlin(x:Double(x+2048)/32, y:Double(seed), z:Double(z+2048)/32)
+    return Perlin(x:Double(x+2048)/32, y:Double(seed), z:Double(z+2048)/32) + Perlin(x:Double(x+2048)/128, y:Double(seed*2), z:Double(z+2048)/128)
 }
 
 public func Noise3d(x:Int, y:Int, z:Int) -> Double {
     return Perlin(x:Double(x-2048)/16, y:Double(y-2048)/16, z:Double(z+2048)/16)
 }
+
+public func DoubleNoise(x:Double, y:Double, z:Double) -> Double {
+    return Perlin(x:x/16, y:y/16, z:z/16)
+}
+
+public func renderNoise(canvas:Canvas, quality:Int, multiplier:Double, frame:Int, baseColor:Color=Color(red:128, green:128, blue:192)) {
+
+        let backgroundQuality = quality
+
+        func absVal(_ n:Double) -> Double {
+            if n < 0 {
+                return n * -1
+            }
+            return n
+        }
+        
+        for height in 0 ..< backgroundQuality {
+            for width in 0 ..< backgroundQuality {
+                let noiseValueBlue = DoubleNoise(x:Double(height), y:Double(width), z:Double(frame))
+                let noiseValueGreen = DoubleNoise(x:Double(height), y:Double(width), z:Double(frame)+64)
+                let noiseValueRed = DoubleNoise(x:Double(height), y:Double(width), z:Double(frame)+128)
+                canvas.render((FillStyle(color:Color(red:UInt8(Double(baseColor.red)-multiplier*absVal(noiseValueRed)),
+                                                     green:UInt8(Double(baseColor.green)-multiplier*absVal(noiseValueGreen)),
+                                                     blue:UInt8(Double(baseColor.blue)-multiplier*absVal(noiseValueBlue))))))
+                canvas.render(Rectangle(rect:Rect(topLeft:Point(x:height*canvas.canvasSize!.width/backgroundQuality, y:width*canvas.canvasSize!.height/backgroundQuality),
+                                                  size:Size(width:(canvas.canvasSize!.width/backgroundQuality)+1, height:(canvas.canvasSize!.height/backgroundQuality)+1)), fillMode:.fill))
+            }
+        }
+    }

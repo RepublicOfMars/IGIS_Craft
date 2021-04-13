@@ -8,7 +8,7 @@ import Igis
 class generatingMap {
     var map : [[Int]]
     let size : (x:Int, z:Int)
-
+    
     init(x:Int, z:Int) {
         size = (x:x, z:z)
         map = []
@@ -37,7 +37,8 @@ class Background : RenderableEntity {
     var generatingRegion = (x:0, y:0, z:0)
     var map : generatingMap
 
-    let pixelsPerRegion = 8
+    let pixelsPerRegion = 1
+    var frame = 0
 
     init(seed:Int=0) {
         regionsToGenerate = worldSize.x * worldSize.y * worldSize.z
@@ -67,27 +68,32 @@ class Background : RenderableEntity {
         if generatingRegion.z >= worldSize.z {
             Background.generated = true
         }
-
-        let regionMapSize = pixelsPerRegion
-        
-        for x in 0 ..< map.map.count {
-            for z in 0 ..< map.map[x].count {
-                if map.map[x][z] > 0 {
-                    canvas.render(FillStyle(color:Color(red:0, green:UInt8((map.map[x][z])*6), blue:128-UInt8((map.map[x][z])*2))))
-                } else {
-                    canvas.render(FillStyle(color:Color(.black)))
-                }
-                let center = Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2)
-                let offset = Point(x:(16/pixelsPerRegion)*((map.size.x/2)-x-1), y:(16/pixelsPerRegion)*((map.size.z/2)-z-1))
-                canvas.render(Rectangle(rect:Rect(topLeft:Point(x:center.x+offset.x, y:center.y+offset.y), size:Size(width:16/regionMapSize, height:16/regionMapSize)), fillMode:.fill))
-            }
-        }
         
     }
 
+    
+
     func renderWorld(camera:Camera, canvas:Canvas) {
+        
         if !Background.generated {
             stepGeneration(canvas:canvas)
+
+            renderNoise(canvas:canvas, quality:64, multiplier:64, frame:frame)
+
+            let regionMapSize = pixelsPerRegion
+            for x in 0 ..< map.map.count {
+                for z in 0 ..< map.map[x].count {
+                    if map.map[x][z] > 0 {
+                        canvas.render(FillStyle(color:Color(red:0, green:UInt8((map.map[x][z])*6), blue:128-UInt8((map.map[x][z])*2))))
+                    } else {
+                        canvas.render(FillStyle(color:Color(.black)))
+                    }
+                    let center = Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2)
+                    let offset = Point(x:(16/pixelsPerRegion)*((map.size.x/2)-x-1), y:(16/pixelsPerRegion)*((map.size.z/2)-z-1))
+                    canvas.render(Rectangle(rect:Rect(topLeft:Point(x:center.x+offset.x, y:center.y+offset.y), size:Size(width:16/regionMapSize, height:16/regionMapSize)), fillMode:.fill))
+                }
+            }
+            
             let text = Text(location:Point(x:canvas.canvasSize!.width/2, y:3*(canvas.canvasSize!.height/4)), text:"Generating World: \((Background.regionsGenerated*100)/regionsToGenerate)%")
             text.font = "\(canvas.canvasSize!.height/64)pt Arial"
             text.baseline = .middle
@@ -113,7 +119,7 @@ class Background : RenderableEntity {
             splash.font = "\((canvas.canvasSize!.height/64))pt Arial"
             splash.baseline = .middle
             splash.alignment = .center
-            canvas.render(FillStyle(color:Color(red:128, green:128, blue:0)))
+            canvas.render(FillStyle(color:Color(red:255, green:255, blue:0)))
             canvas.render(splash)
 
             let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.0.9")
@@ -123,8 +129,10 @@ class Background : RenderableEntity {
             canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
             canvas.render(version)
         } else {
+            renderNoise(canvas:canvas, quality:32, multiplier:8, frame:frame)
             Background.world.renderWorld(camera:camera, canvas:canvas)
         }
+        frame += 1
     }
 
     func loadedRegions() -> Int {

@@ -22,24 +22,19 @@ class Chunk {
             for z in 0 ..< chunkSize {
                 let terrainHeight = 32 + Int(8.0*(Noise(x:x+(self.location.x*self.chunkSize), z:z+(self.location.z*self.chunkSize), seed:seed)))
                 for y in 0 ..< chunkSize {
-                    let cave = Int(8.0*Noise3d(x:x+(self.location.x*self.chunkSize),
-                                               y:y+(self.location.y*self.chunkSize),
-                                               z:z+(self.location.z*self.chunkSize)))
                     var type = "air"
-                    if cave > -4 {
-                        if y + self.location.y*self.chunkSize <= terrainHeight-3 {
-                            type = "stone"
-                            if y + self.location.y*self.chunkSize <= 8 && Int.random(in:1...128) == 1 {
-                                type = "diamond_ore"
-                            }
-                            if y + self.location.y*self.chunkSize <= 16 && Int.random(in:1...64) == 1 {
-                                type = "iron_ore"
-                            }
-                        } else if y + self.location.y*self.chunkSize <= terrainHeight-1 {
-                            type = "dirt"
-                        } else if y + self.location.y*self.chunkSize <= terrainHeight {
-                            type = "grass"
+                    if y + self.location.y*self.chunkSize <= terrainHeight-3 {
+                        type = "stone"
+                        if y + self.location.y*self.chunkSize <= 8 && Int.random(in:1...128) == 1 {
+                            type = "diamond_ore"
                         }
+                        if y + self.location.y*self.chunkSize <= 16 && Int.random(in:1...64) == 1 {
+                            type = "iron_ore"
+                        }
+                    } else if y + self.location.y*self.chunkSize <= terrainHeight-1 {
+                        type = "dirt"
+                    } else if y + self.location.y*self.chunkSize <= terrainHeight {
+                        type = "grass"
                     }
                     
                     if y + self.location.y*self.chunkSize <= 0 {

@@ -21,6 +21,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
 
     static var renderingComputer = 0
 
+    var frame = 0
+
     var initString = ""
 
     var typing = false
@@ -30,8 +32,15 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     var cameraVelocity = (forward:0.0, left:0.0, up:0.0)
     var cameraIsSprinting = false
     var cameraIsFlying = true
+
+    var firstComputer = false
+    static var playerJoined = false
     
     init() {
+        if !BackgroundLayer.playerJoined {
+            firstComputer = true
+            BackgroundLayer.playerJoined = true
+        }
         // Using a meaningful name can be helpful for debugging
         super.init(name:"Background")
 
@@ -226,7 +235,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             case "Backspace":
                 initString = String(initString.dropLast())
             case "Enter":
-                initializeComputer()
+                if firstComputer {
+                    initializeComputer()
+                }
             default:
                 if !shiftKey && !ctrlKey && !altKey {
                     initString.append(key)
@@ -288,9 +299,6 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 
                 canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
                 canvas.render(FillStyle(color:Color(red:128, green:128, blue:196)))
-                if !Background.generated {
-                    canvas.render(FillStyle(color:Color(red:128, green:64, blue:32)))
-                }
                 canvas.render(sky)
                 
                 canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
@@ -343,18 +351,32 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             }
         } else {
             clearCanvas(canvas:canvas)
-            canvas.render(FillStyle(color:Color(red:0, green:0, blue:0)))
-            Text(location:Point(x:0, y:0), text:"").alignment = .center
-            Text(location:Point(x:0, y:0), text:"").font = "36pt Arial"
-            let initPrompt = Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2-12), text:"Please Enter a Username: \(initString)")
-            initPrompt.alignment = .center
-            initPrompt.font = "16pt Arial"
-            canvas.render(initPrompt)
-            let onlineText = Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2 + 12), text:"Users online:")
-            onlineText.font = "12pt Arial"
-            canvas.render(onlineText)
-            for user in 0 ..< BackgroundLayer.usernames.count {
-                canvas.render(Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2 + 24 + 12*user), text:"\(BackgroundLayer.usernames[user])"))
+            if firstComputer {
+                //lets player enter a username (altered with temporary removal of multiplayer)
+                /*
+                canvas.render(FillStyle(color:Color(red:0, green:0, blue:0)))
+                Text(location:Point(x:0, y:0), text:"").alignment = .center
+                Text(location:Point(x:0, y:0), text:"").font = "36pt Arial"
+                let initPrompt = Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2-12), text:"Please Enter a Username: \(initString)")
+                initPrompt.alignment = .center
+                initPrompt.font = "16pt Arial"
+                canvas.render(initPrompt)
+                let onlineText = Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2 + 12), text:"Users online:")
+                onlineText.font = "12pt Arial"
+                canvas.render(onlineText)
+                for user in 0 ..< BackgroundLayer.usernames.count {
+                    canvas.render(Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2 + 24 + 12*user), text:"\(BackgroundLayer.usernames[user])"))
+                }
+                 */
+                initializeComputer()
+            } else {
+                renderNoise(canvas:canvas, quality:16, multiplier:128, frame:frame, baseColor:Color(red:128, green:128, blue:128))
+                canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
+                let initPrompt = Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2), text:"Multiplayer is currently unsupported.")
+                initPrompt.alignment = .center
+                initPrompt.font = "\(canvas.canvasSize!.height/16)pt Arial"
+                canvas.render(initPrompt)
+                frame += 1
             }
         }
     }
