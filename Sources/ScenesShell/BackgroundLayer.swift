@@ -352,22 +352,6 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
         } else {
             clearCanvas(canvas:canvas)
             if firstComputer {
-                //lets player enter a username (altered with temporary removal of multiplayer)
-                /*
-                canvas.render(FillStyle(color:Color(red:0, green:0, blue:0)))
-                Text(location:Point(x:0, y:0), text:"").alignment = .center
-                Text(location:Point(x:0, y:0), text:"").font = "36pt Arial"
-                let initPrompt = Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2-12), text:"Please Enter a Username: \(initString)")
-                initPrompt.alignment = .center
-                initPrompt.font = "16pt Arial"
-                canvas.render(initPrompt)
-                let onlineText = Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2 + 12), text:"Users online:")
-                onlineText.font = "12pt Arial"
-                canvas.render(onlineText)
-                for user in 0 ..< BackgroundLayer.usernames.count {
-                    canvas.render(Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2 + 24 + 12*user), text:"\(BackgroundLayer.usernames[user])"))
-                }
-                 */
                 initializeComputer()
             } else {
                 renderNoise(canvas:canvas, quality:16, multiplier:128, frame:frame, baseColor:Color(red:128, green:128, blue:128))
