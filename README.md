@@ -2,6 +2,11 @@
 
 A recreation of the video game Minecraft using Igis and Scenes.
 
+## Controls
+* WASD - Move forward, left, back, and right
+* IJKL - Look up, left, down, and right
+* Space - Jump
+
 ## Links
 * Igis:
 	* https://github.com/TheCoderMerlin/Igis
