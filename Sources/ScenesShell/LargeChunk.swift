@@ -77,4 +77,17 @@ class kiloChunk {
         }
         return output
     }
+
+    func setBlock(at:BlockPoint3d, to:String) {
+        let chunkLocation = BlockPoint3d(x:at.x/kiloChunkSize, y:at.y/kiloChunkSize, z:at.z/kiloChunkSize)
+        for y in 0 ..< self.Chunks.count {
+            for x in 0 ..< self.Chunks.count {
+                for z in 0 ..< self.Chunks.count {
+                    if self.Chunks[y][x][z].location.isEqual(to:chunkLocation) {
+                        self.Chunks[y][x][z].setBlock(at:at, to:to)
+                    }
+                }
+            }
+        }
+    }
 }

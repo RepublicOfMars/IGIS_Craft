@@ -16,7 +16,7 @@ class Path3d {
         Points3d.append(Point3d)
     }
 
-    func flatten(camera:Camera, canvas:Canvas, solid:Bool=true) -> Path { //flattens path to 2d (for rendering)
+    func flatten(camera:Camera, canvas:Canvas, solid:Bool=true, outline:Bool=false) -> Path { //flattens path to 2d (for rendering)
         var Points2d : [Point] = []
         for index in 0 ..< Points3d.count {
             if let point = Points3d[index].flatten(camera:camera, canvas:canvas) {
@@ -24,8 +24,12 @@ class Path3d {
             }
         }
 
-        var path = Path(fillMode:.fillAndStroke)
-        if !solid {
+        var path = Path()
+        if solid && outline {
+            path = Path(fillMode:.fillAndStroke)
+        } else if solid {
+            path = Path(fillMode:.fill)
+        } else if outline {
             path = Path(fillMode:.stroke)
         }
 
@@ -36,21 +40,10 @@ class Path3d {
         return path
     }
 
-    func renderPath(camera:Camera, canvas:Canvas, color:Color, solid:Bool=true) {
-        var subtraction : (red:UInt8, green:UInt8, blue:UInt8) = (red:0, green:0, blue:0)
+    func renderPath(camera:Camera, canvas:Canvas, color:Color, solid:Bool=true, outline:Bool=false) {
         
-        if color.red >= 8 {
-            subtraction.red = 8
-        }
-        if color.green >= 8 {
-            subtraction.green = 8
-        }
-        if color.blue >= 8 {
-            subtraction.blue = 8
-        }
-        
-        canvas.render(StrokeStyle(color:Color(red:color.red-subtraction.red, green:color.green-subtraction.green, blue:color.blue-subtraction.blue)))
+        canvas.render(StrokeStyle(color:Color(red:64, green:64, blue:64)))
         canvas.render(FillStyle(color:color))
-        canvas.render(self.flatten(camera:camera, canvas:canvas, solid:solid))
+        canvas.render(self.flatten(camera:camera, canvas:canvas, solid:solid, outline:outline))
     }
 }

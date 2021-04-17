@@ -31,6 +31,10 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
 
     var firstComputer = false
     static var playerJoined = false
+
+    var selectedBlock : BlockPoint3d? = nil
+    var placeBlock : BlockPoint3d? = nil
+    var mining = false
     
     init() {
         if !BackgroundLayer.playerJoined {
@@ -138,7 +142,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
         if computerIsActive {
             if !typing {
                 switch code {
-                case "KeyI":
+                case "KeyI": //Rotation
                     cameraIsRotating.up = true
                 case "KeyK":
                     cameraIsRotating.down = true
@@ -146,7 +150,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     cameraIsRotating.left = true
                 case "KeyL":
                     cameraIsRotating.right = true
-                case "KeyW":
+                case "KeyW": //Movement
                     cameraVelocity.forward = 0.5
                 case "KeyS":
                     cameraVelocity.forward = -0.5
@@ -154,11 +158,17 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     cameraVelocity.left = 0.5
                 case "KeyD":
                     cameraVelocity.left = -0.5
-                case "Space":
+                case "KeyU": //Break block
+                    mining = true
+                case "KeyO": //Place block
+                    if let location = placeBlock {
+                        BackgroundLayer.background.setBlock(at:location, to:"grass")
+                    }
+                case "Space": //jump
                     cameraVelocity.up += 1.8
-                case "ShiftLeft":
+                case "ShiftLeft": //sprint
                     cameraIsSprinting = true
-                case "KeyR":
+                case "KeyR": //reset motion (in case igis breaks or something (wonder why that would happen))
                     cameraIsRotating.up = false
                     cameraIsRotating.down = false
                     cameraIsRotating.left = false
@@ -193,7 +203,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                                 BackgroundLayer.cameras[thisComputer].x = x
                                 BackgroundLayer.cameras[thisComputer].y = y
                                 BackgroundLayer.cameras[thisComputer].z = z
-
+                                
                                 BackgroundLayer.chat.input("Teleported to \(Int(x)), \(Int(y)), \(Int(z))")
                             }
                         }
@@ -231,6 +241,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     cameraVelocity.left = 0
                 case "KeyD":
                     cameraVelocity.left = 0
+                case "KeyU":
+                    mining = false
                 case "ShiftLeft":
                     cameraIsSprinting = false
                 default:
@@ -281,9 +293,61 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                                                                                           y:Int(BackgroundLayer.cameras[thisComputer].y),
                                                                                           z:Int(BackgroundLayer.cameras[thisComputer].z))) {
                     canvas.render(Text(location:Point(x:20, y:100), text:"Current block: \(currentBlock.type)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:110), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
                 }
+                canvas.render(Text(location:Point(x:20, y:110), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
+                
+                //show selected block
+                var blockSelected = false
+                var blocksForward = 0.0
+                let ray = Turtle3d()
+                
+                ray.x = BackgroundLayer.cameras[thisComputer].x
+                ray.y = BackgroundLayer.cameras[thisComputer].y
+                ray.z = BackgroundLayer.cameras[thisComputer].z
+                ray.pitch = BackgroundLayer.cameras[thisComputer].pitch
+                ray.yaw = BackgroundLayer.cameras[thisComputer].yaw
+                
+                selectedBlock = nil
+                placeBlock = nil
+                
+                while !blockSelected && blocksForward <= 4.5 {
+                    if let block = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z))) {
+                        if block.type != "air" {
+                            BackgroundLayer.background.setBlock(at:BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z)), to:"selected")
+                            selectedBlock = BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z))
+                            
+                            ray.forward(steps:-1/16)
+
+                            placeBlock = BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z))
+                            
+                            blockSelected = true
+                        }
+                    }
+
+                    ray.forward(steps:1/16)
+                    blocksForward += 1/16
+                }
+
+                
+                if mining {
+                    if let blockToBreak = selectedBlock {
+                        BackgroundLayer.background.setBlock(at:blockToBreak, to:"mine")
+                    }
+                }
+                
+                //crosshair
+                let crosshairSize = canvas.canvasSize!.height/64
+                let crosshair = Turtle(canvasSize:canvas.canvasSize!)
+                crosshair.penWidth(width:2)
+                crosshair.penColor(color:Color(red:64, green:64, blue:64))
+                for _ in 0 ..< 4 {
+                    crosshair.penDown()
+                    crosshair.forward(steps:crosshairSize)
+                    crosshair.backward(steps:crosshairSize)
+                    crosshair.right(degrees:90)
+                }
+                canvas.render(crosshair)
             }
             BackgroundLayer.chat.render(canvas:canvas)
         } else {

@@ -33,13 +33,13 @@ class Cube {
         sortingSquares = mergeSort(sortingSquares, by:workingArray) as! [Square]
     }
 
-    func renderCube(camera:Camera, canvas:Canvas, color:Color, solid:Bool=true) {
+    func renderCube(camera:Camera, canvas:Canvas, color:Color, solid:Bool=true, outline:Bool=false) {
         var sides = self.getSquares()
         
         sortByDistance(&sides, camera:camera)
         
         for square in sides {
-            square.renderSquare(camera:camera, canvas:canvas, color:color, solid:solid)
+            square.renderSquare(camera:camera, canvas:canvas, color:color, solid:true, outline:outline)
         }
     }
 }

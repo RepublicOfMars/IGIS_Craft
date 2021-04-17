@@ -5,7 +5,7 @@ class Chunk {
     var Blocks : [[[Block]]]
     var location : BlockPoint3d
     let chunkSize : Int
-
+    
     init(location:BlockPoint3d, chunkSize:Int, seed:Int=0) {
         Blocks = []
         self.location = location
@@ -93,5 +93,24 @@ class Chunk {
             }
         }
         return output
+    }
+    
+    func setBlock(at:BlockPoint3d, to:String) {
+        for y in 0 ..< self.Blocks.count {
+            for x in 0 ..< self.Blocks.count {
+                for z in 0 ..< self.Blocks.count {
+                    if self.Blocks[y][x][z].location.isEqual(to:at) {
+                        if to == "selected" {
+                            self.Blocks[y][x][z].selected = true
+                        } else if to == "mine" {
+                            self.Blocks[y][x][z].mine()
+                        } else {
+                            self.Blocks[y][x][z].type = to
+                        }
+                        self.Blocks[y][x][z].updateBlock()
+                    }
+                }
+            }
+        }
     }
 }

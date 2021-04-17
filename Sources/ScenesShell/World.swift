@@ -80,6 +80,15 @@ class World {
         return output
     }
 
+    func setBlock(at:BlockPoint3d, to:String) {
+        let kiloChunkLocation = BlockPoint3d(x:at.x/(regionSize*regionSize), y:at.y/(regionSize*regionSize), z:at.z/(regionSize*regionSize))
+        for region in 0 ..< self.regions.count {
+            if self.regions[region].location.isEqual(to:kiloChunkLocation) {
+                self.regions[region].setBlock(at:at, to:to)
+            }
+        }
+    }
+
     func renderWorld(camera:Camera, canvas:Canvas) {
         updateLoadedRegions(camera:camera)
         if regions.count > 0 {

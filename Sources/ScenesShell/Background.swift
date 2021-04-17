@@ -28,7 +28,7 @@ class generatingMap {
 class Background : RenderableEntity {
     static var world = World()
     static var seed : Int = 0
-    public let worldSize = (x:16, y:4, z:16)
+    public let worldSize = (x:4, y:4, z:4)
     let regionsToGenerate : Int
     static var regionsGenerated = 0
     let splashTxt = splashText()
@@ -83,10 +83,20 @@ class Background : RenderableEntity {
             let regionMapSize = pixelsPerRegion
             for x in 0 ..< map.map.count {
                 for z in 0 ..< map.map[x].count {
-                    if map.map[x][z] > 0 {
-                        canvas.render(FillStyle(color:Color(red:0, green:UInt8((map.map[x][z])*6), blue:128-UInt8((map.map[x][z])*2))))
+                    if z < map.map.count*2/3 {
+                        if map.map[x][z] > 0 {
+                            canvas.render(FillStyle(color:Color(red:UInt8((map.map[x][z])*6), green:UInt8((map.map[x][z])*3), blue:0)))
+                        } else {
+                            canvas.render(FillStyle(color:Color(.black)))
+                        }
                     } else {
-                        canvas.render(FillStyle(color:Color(.black)))
+                        if map.map[x][z] > 32 || (z > (map.map.count*2/3) && map.map[x][z] > 0) {
+                            canvas.render(FillStyle(color:Color(red:0, green:UInt8((map.map[x][z])*6), blue:128-UInt8((map.map[x][z])*2))))
+                        } else if map.map[x][z] > 0 {
+                            canvas.render(FillStyle(color:Color(red:UInt8((map.map[x][z])*6), green:UInt8((map.map[x][z])*3), blue:0)))
+                        } else {
+                            canvas.render(FillStyle(color:Color(.black)))
+                        }
                     }
                     let center = Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2)
                     let offset = Point(x:(16/pixelsPerRegion)*((map.size.x/2)-x-1), y:(16/pixelsPerRegion)*((map.size.z/2)-z-1))
@@ -141,5 +151,9 @@ class Background : RenderableEntity {
 
     func getBlock(at:BlockPoint3d) -> Block? {
         return Background.world.getBlock(at:at)
+    }
+
+    func setBlock(at:BlockPoint3d, to:String) {
+        Background.world.setBlock(at:at, to:to)
     }
 }

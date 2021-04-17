@@ -1,3 +1,4 @@
+
 import Igis
 import Scenes
 import Foundation
@@ -7,26 +8,63 @@ class Block {
     var color : Color
     var type : String
     var selected = false
+    
+    var breakValue = 0
+    var breaking = false
+    var hardness : Int
+
+    func updateBlock() {
+        switch type{
+        case "bedrock":
+            color = Color(red:64, green:64, blue:64)
+            hardness = -1
+        case "diamond_ore":
+            color = Color(red:196, green:196, blue:255)
+            hardness = 64
+        case "iron_ore":
+            color = Color(red:164, green:132, blue:128)
+            hardness = 32
+        case "stone":
+            color = Color(red:128, green:128, blue:128)
+            hardness = 32
+        case "dirt":
+            color = Color(red:128, green:64, blue:32)
+            hardness = 8
+        case "grass":
+            color = Color(red:32, green:128, blue:32)
+            hardness = 8
+        default:
+            color = Color(red:255, green:32, blue:255)
+            hardness = 0
+        }
+        if type == "grass" || type == "stone" || type == "dirt" {
+            let variation = Int(32*DoubleNoise(x:Double(location.x)+0.1, y:Double(location.y)+0.1, z:Double(location.z)+0.1))
+            color = Color(red:UInt8(Int(color.red)+variation),
+                          green:UInt8(Int(color.green)+variation),
+                          blue:UInt8(Int(color.blue)+variation))
+        }
+    }
+
+    func mine() {
+        breaking = true
+        if hardness > 0 {
+            breakValue += 1
+        }
+        if breakValue >= hardness {
+            self.type = "air"
+            self.breaking = false
+            self.breakValue = 0
+        }
+    }
 
     init(location:BlockPoint3d, type:String) {
         self.location = location
         self.type = type
-        switch type{
-        case "bedrock":
-            color = Color(red:64, green:64, blue:64)
-        case "diamond_ore":
-            color = Color(red:196, green:196, blue:255)
-        case "iron_ore":
-            color = Color(red:164, green:132, blue:128)
-        case "stone":
-            color = Color(red:128, green:128, blue:128)
-        case "dirt":
-            color = Color(red:128, green:64, blue:32)
-        case "grass":
-            color = Color(red:32, green:128, blue:32)
-        default:
-            color = Color(red:255, green:0, blue:255)
-        }
+        
+        self.color = Color(red:255, green:32, blue:255)
+        self.hardness = 0
+        
+        updateBlock()
     }
 
     func isVisible() -> Bool {
@@ -35,7 +73,23 @@ class Block {
 
     func renderBlock(camera:Camera, canvas:Canvas) {
         if type != "air" && self.isVisible() {
-            Cube(center:location.convertToDouble()).renderCube(camera:camera, canvas:canvas, color:color)
+            if !breaking {
+                breakValue = 0
+                Cube(center:location.convertToDouble()).renderCube(camera:camera, canvas:canvas, color:color, outline:selected)
+            } else {
+                var colorMultiplier = 0.0
+
+                if hardness > breakValue {
+                    colorMultiplier = 1.0-(Double(breakValue)/Double(hardness))
+                }
+                
+                let redBreak = UInt8(Double(color.red) * colorMultiplier)
+                let greenBreak = UInt8(Double(color.green) * colorMultiplier)
+                let blueBreak = UInt8(Double(color.blue) * colorMultiplier)
+                Cube(center:location.convertToDouble()).renderCube(camera:camera, canvas:canvas, color:Color(red:redBreak, green:greenBreak, blue:blueBreak), outline:selected)
+                self.breaking = false
+            }
         }
+        self.selected = false
     }
 }

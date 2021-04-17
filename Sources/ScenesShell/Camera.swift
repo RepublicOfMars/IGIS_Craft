@@ -17,7 +17,7 @@ class Camera {
         
         pitch = 0
         yaw = 0
-    }
+    } 
 
     func correctRotation() {
         if pitch > 90 {
