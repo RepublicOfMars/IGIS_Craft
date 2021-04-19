@@ -1,11 +1,18 @@
 import Igis
 import Scenes
+import Foundation
 
   /*
      This class is responsible for the background Layer.
      Internally, it maintains the RenderableEntities for this layer.
    */
 
+func absVal(_ n: Double) -> Double {
+    if n < 0 {
+        return -1 * n
+    }
+    return n
+}
 
 class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     static let seed = Int.random(in:0...256)
@@ -28,6 +35,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     var cameraVelocity = (forward:0.0, left:0.0, up:0.0)
     var cameraIsSprinting = false
     var cameraIsFlying = true
+    var onGround = false
 
     var firstComputer = false
     static var playerJoined = false
@@ -77,59 +85,146 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             if cameraIsRotating.down{BackgroundLayer.cameras[thisComputer].cameraRotateDown()}
             if cameraIsRotating.left{BackgroundLayer.cameras[thisComputer].cameraRotateLeft()}
             if cameraIsRotating.right{BackgroundLayer.cameras[thisComputer].cameraRotateRight()}
+            
+            cameraVelocity.up -= 0.25 //gravity
+            //Vertical collision
 
-            cameraVelocity.up -= 0.2
-
-            var collisionAdder = (up:0.5, forward:0.5, left:0.5)
-
-            if cameraVelocity.forward < 0 {
-                collisionAdder.forward = -0.5
+            let verticalRay = Turtle3d()
+            verticalRay.x = BackgroundLayer.cameras[thisComputer].x
+            verticalRay.y = BackgroundLayer.cameras[thisComputer].y
+            verticalRay.z = BackgroundLayer.cameras[thisComputer].z
+            if cameraVelocity.up > 0 {
+                verticalRay.pitch = 90.0
+                verticalRay.y += 0.5
+            } else {
+                verticalRay.pitch = -90.0
+                verticalRay.y -= 1.5
             }
-            if cameraVelocity.left < 0 {
-                collisionAdder.left = -0.5
-            }
-            if cameraVelocity.up < 0 {
-                collisionAdder.up = -1.5
+            var verticalRayDistance = 0.0
+            var verticalCollision = false
+
+            while verticalRayDistance < absVal(cameraVelocity.up) && !verticalCollision {
+                if let verticalRayBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(verticalRay.x), y:Int(verticalRay.y), z:Int(verticalRay.z))) {
+                    if verticalRayBlock.type != "air" {
+                        verticalCollision = true
+                    }
+                }
+                if !verticalCollision {
+                    verticalRayDistance += 1/32
+                    verticalRay.forward(steps:1/32)
+                }
             }
             
-            if let VerticalCollisionBlock = Background.world.getBlock(at:BlockPoint3d(x:Int(BackgroundLayer.cameras[thisComputer].x),
-                                                                                      y:Int(BackgroundLayer.cameras[thisComputer].y+cameraVelocity.up+collisionAdder.up),
-                                                                                      z:Int(BackgroundLayer.cameras[thisComputer].z))) {
-                
-                if VerticalCollisionBlock.type == "air" {
-                    BackgroundLayer.cameras[thisComputer].cameraUp(cameraVelocity.up)
+            if verticalCollision {
+                if cameraVelocity.up > 0 {
+                    verticalRay.y -= 0.5
                 } else {
-                    var BlockCollisionAdder = 1.0
-                    if cameraVelocity.up > 0 {BlockCollisionAdder = -1.0}
-                    
-                    let relativePosition = (BackgroundLayer.cameras[thisComputer].y+collisionAdder.up) - (Double(VerticalCollisionBlock.location.y)+BlockCollisionAdder)
-                    BackgroundLayer.cameras[thisComputer].cameraUp(-relativePosition)
-                    cameraVelocity.up = 0
+                    verticalRay.y += 1.5
                 }
+                BackgroundLayer.cameras[thisComputer].x = verticalRay.x
+                BackgroundLayer.cameras[thisComputer].y = verticalRay.y
+                BackgroundLayer.cameras[thisComputer].z = verticalRay.z
+                cameraVelocity.up = 0.0
             } else {
                 BackgroundLayer.cameras[thisComputer].cameraUp(cameraVelocity.up)
             }
-            
-            BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward * multiplier)
-            BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left * multiplier)
-            
-            /*
-            if let HorizontalCollisionBlock = Background.world.getBlock(at:BlockPoint3d(x:Int(BackgroundLayer.cameras[thisComputer].x+cameraVelocity.forward+collisionAdder.forward),
-                                                                                        y:Int(BackgroundLayer.cameras[thisComputer].y),
-                                                                                        z:Int(BackgroundLayer.cameras[thisComputer].z+cameraVelocity.left+collisionAdder.left))) {
-                
-                if HorizontalCollisionBlock.type == "air" {
-                    BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward * multiplier)
-                    BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left * multiplier)
-                } else {
-                    cameraVelocity.forward = 0
-                    cameraVelocity.left = 0
-                }
+
+            if verticalRayDistance == 0 {
+                onGround = true
             } else {
-                BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward * multiplier)
-                BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left * multiplier)
+                onGround = false
             }
-             */
+            
+            //forward/backward collision
+            
+            let forwardRay = Turtle3d()
+            forwardRay.x = BackgroundLayer.cameras[thisComputer].x
+            forwardRay.y = BackgroundLayer.cameras[thisComputer].y
+            forwardRay.z = BackgroundLayer.cameras[thisComputer].z
+            forwardRay.yaw = BackgroundLayer.cameras[thisComputer].yaw
+            var forwardRayDistance = 0.0
+            var forwardCollision = false
+            
+            while forwardRayDistance < absVal(cameraVelocity.forward * multiplier) && !forwardCollision {
+                forwardRayDistance += 1/16
+                if cameraVelocity.forward > 0 {
+                    forwardRay.forward(steps:1/16)
+                } else {
+                    forwardRay.forward(steps:-1/16)
+                }
+
+                if let forwardRayBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(forwardRay.x), y:Int(forwardRay.y), z:Int(forwardRay.z))) {
+                    if forwardRayBlock.type != "air" {
+                        forwardCollision = true
+                    }
+                }
+                
+                if let forwardRayBelowBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(forwardRay.x), y:Int(forwardRay.y)-1, z:Int(forwardRay.z))) {
+                    if forwardRayBelowBlock.type != "air" {
+                        forwardCollision = true
+                    }
+                }
+            }
+
+            if forwardCollision {
+                if cameraVelocity.forward > 0 {
+                    forwardRay.forward(steps:-0.5)
+                } else {
+                    forwardRay.forward(steps:0.5)
+                }
+                BackgroundLayer.cameras[thisComputer].x = forwardRay.x
+                BackgroundLayer.cameras[thisComputer].y = forwardRay.y
+                BackgroundLayer.cameras[thisComputer].z = forwardRay.z
+                cameraVelocity.forward = 0
+            } else {
+                BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward * multiplier)   
+            }
+            
+            //Left/Right collision
+            
+            let leftRay = Turtle3d()
+            leftRay.x = BackgroundLayer.cameras[thisComputer].x
+            leftRay.y = BackgroundLayer.cameras[thisComputer].y
+            leftRay.z = BackgroundLayer.cameras[thisComputer].z
+            leftRay.yaw = BackgroundLayer.cameras[thisComputer].yaw - 90
+            leftRay.correctRotation()
+            var leftRayDistance = 0.0
+            var leftCollision = false
+            
+            while leftRayDistance < absVal(cameraVelocity.left * multiplier) && !leftCollision {
+                leftRayDistance += 1/16
+                if cameraVelocity.left > 0 {
+                    leftRay.forward(steps:1/16)
+                } else {
+                    leftRay.forward(steps:-1/16)
+                }
+
+                if let leftRayBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(leftRay.x), y:Int(leftRay.y), z:Int(leftRay.z))) {
+                    if leftRayBlock.type != "air" {
+                        leftCollision = true
+                    }
+                }
+                
+                if let leftRayBelowBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(leftRay.x), y:Int(leftRay.y)-1, z:Int(leftRay.z))) {
+                    if leftRayBelowBlock.type != "air" {
+                        leftCollision = true
+                    }
+                }
+            }
+
+            if leftCollision {
+                if cameraVelocity.left > 0 {
+                    leftRay.forward(steps:-0.5)
+                } else {
+                    leftRay.forward(steps:0.5)
+                }
+                BackgroundLayer.cameras[thisComputer].x = leftRay.x
+                BackgroundLayer.cameras[thisComputer].y = leftRay.y
+                BackgroundLayer.cameras[thisComputer].z = leftRay.z
+                cameraVelocity.left = 0
+            } else {
+                BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left * multiplier)   
+            }
         }
     }
 
