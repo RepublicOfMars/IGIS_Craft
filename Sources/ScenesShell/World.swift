@@ -10,7 +10,7 @@ class World {
     init() {
         regions = []
         unloadedRegions = []
-        renderDistance = 96
+        renderDistance = 72
     }
 
     func addRegion(_ region:kiloChunk) {

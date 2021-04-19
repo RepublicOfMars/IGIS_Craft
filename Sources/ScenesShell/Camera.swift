@@ -105,19 +105,19 @@ class Camera {
     }
 
     func cameraRotateLeft(_ multiplier:Double=1) {
-        self.rotate(yaw:-2.0*multiplier)
+        self.rotate(yaw:-4.0*multiplier)
     }
 
     func cameraRotateRight(_ multiplier:Double=1) {
-        self.rotate(yaw:2.0*multiplier)
+        self.rotate(yaw:4.0*multiplier)
     }
 
     func cameraRotateUp(_ multiplier:Double=1) {
-        self.rotate(pitch:2.0*multiplier)
+        self.rotate(pitch:4.0*multiplier)
     }
 
     func cameraRotateDown(_ multiplier:Double=1) {
-        self.rotate(pitch:-2.0*multiplier)
+        self.rotate(pitch:-4.0*multiplier)
     }
 
     func cameraForward(_ multiplier:Double=1) {

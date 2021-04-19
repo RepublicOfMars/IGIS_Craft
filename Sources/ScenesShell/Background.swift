@@ -135,7 +135,7 @@ class Background : RenderableEntity {
             canvas.render(FillStyle(color:Color(red:255, green:255, blue:0)))
             canvas.render(splash)
 
-            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.0.9")
+            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.1.0")
             version.font = "\((canvas.canvasSize!.height/64))pt Arial"
             version.baseline = .bottom
             version.alignment = .left

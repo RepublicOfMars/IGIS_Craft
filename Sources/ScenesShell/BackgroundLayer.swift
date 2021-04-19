@@ -33,7 +33,6 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     
     var cameraIsRotating = (up:false, down:false, left:false, right:false)
     var cameraVelocity = (forward:0.0, left:0.0, up:0.0)
-    var cameraIsSprinting = false
     var cameraIsFlying = true
     var onGround = false
 
@@ -78,8 +77,6 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
 
     override func preCalculate(canvas:Canvas) {
         if computerIsActive && Background.generated {
-            var multiplier = 1.0
-            if cameraIsSprinting{multiplier = 2}
             
             if cameraIsRotating.up{BackgroundLayer.cameras[thisComputer].cameraRotateUp()}
             if cameraIsRotating.down{BackgroundLayer.cameras[thisComputer].cameraRotateDown()}
@@ -145,7 +142,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             var forwardRayDistance = 0.0
             var forwardCollision = false
             
-            while forwardRayDistance < absVal(cameraVelocity.forward * multiplier) && !forwardCollision {
+            while forwardRayDistance < absVal(cameraVelocity.forward) && !forwardCollision {
                 forwardRayDistance += 1/16
                 if cameraVelocity.forward > 0 {
                     forwardRay.forward(steps:1/16)
@@ -175,9 +172,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 BackgroundLayer.cameras[thisComputer].x = forwardRay.x
                 BackgroundLayer.cameras[thisComputer].y = forwardRay.y
                 BackgroundLayer.cameras[thisComputer].z = forwardRay.z
-                cameraVelocity.forward = 0
             } else {
-                BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward * multiplier)   
+                BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward)   
             }
             
             //Left/Right collision
@@ -191,7 +187,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             var leftRayDistance = 0.0
             var leftCollision = false
             
-            while leftRayDistance < absVal(cameraVelocity.left * multiplier) && !leftCollision {
+            while leftRayDistance < absVal(cameraVelocity.left) && !leftCollision {
                 leftRayDistance += 1/16
                 if cameraVelocity.left > 0 {
                     leftRay.forward(steps:1/16)
@@ -221,9 +217,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 BackgroundLayer.cameras[thisComputer].x = leftRay.x
                 BackgroundLayer.cameras[thisComputer].y = leftRay.y
                 BackgroundLayer.cameras[thisComputer].z = leftRay.z
-                cameraVelocity.left = 0
             } else {
-                BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left * multiplier)   
+                BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left)   
             }
         }
     }
@@ -260,18 +255,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                         BackgroundLayer.background.setBlock(at:location, to:"grass")
                     }
                 case "Space": //jump
-                    cameraVelocity.up += 1.8
-                case "ShiftLeft": //sprint
-                    cameraIsSprinting = true
-                case "KeyR": //reset motion (in case igis breaks or something (wonder why that would happen))
-                    cameraIsRotating.up = false
-                    cameraIsRotating.down = false
-                    cameraIsRotating.left = false
-                    cameraIsRotating.right = false
-                    cameraVelocity.forward = 0
-                    cameraVelocity.left = 0
-                    cameraVelocity.up = 0
-                    cameraIsSprinting = false
+                    if onGround {
+                        cameraVelocity.up += 2.0
+                    }
                 case "Enter":
                     typing = true
                 case "Slash":
@@ -338,8 +324,6 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     cameraVelocity.left = 0
                 case "KeyU":
                     mining = false
-                case "ShiftLeft":
-                    cameraIsSprinting = false
                 default:
                     do {}
                 }
@@ -382,7 +366,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 canvas.render(Text(location:Point(x:20, y:50), text:"Z: \(Int(BackgroundLayer.cameras[thisComputer].z))", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(BackgroundLayer.cameras[thisComputer].pitch)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: \(8/BackgroundLayer.computerCount)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: 8", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:90), text:"Currently Loaded Regions: \(BackgroundLayer.background.loadedRegions())", fillMode:.fill))
                 if let currentBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(BackgroundLayer.cameras[thisComputer].x),
                                                                                           y:Int(BackgroundLayer.cameras[thisComputer].y),
