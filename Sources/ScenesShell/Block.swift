@@ -33,11 +33,17 @@ class Block {
         case "grass":
             color = Color(red:32, green:128, blue:32)
             hardness = 8
+        case "log":
+            color = Color(red:96, green:64, blue:48)
+            hardness = 16
+        case "leaves":
+            color = Color(red:64, green:164, blue:32)
+            hardness = 4
         default:
             color = Color(red:255, green:32, blue:255)
             hardness = 0
         }
-        if type == "grass" || type == "stone" || type == "dirt" {
+        if type == "grass" || type == "stone" || type == "dirt" || type == "leaves" {
             let variation = Int(32*DoubleNoise(x:Double(location.x)+0.1, y:Double(location.y)+0.1, z:Double(location.z)+0.1))
             color = Color(red:UInt8(Int(color.red)+variation),
                           green:UInt8(Int(color.green)+variation),

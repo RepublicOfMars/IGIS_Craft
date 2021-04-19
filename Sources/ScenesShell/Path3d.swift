@@ -28,7 +28,7 @@ class Path3d {
         if solid && outline {
             path = Path(fillMode:.fillAndStroke)
         } else if solid {
-            path = Path(fillMode:.fill)
+            path = Path(fillMode:.fillAndStroke)
         } else if outline {
             path = Path(fillMode:.stroke)
         }
@@ -41,8 +41,22 @@ class Path3d {
     }
 
     func renderPath(camera:Camera, canvas:Canvas, color:Color, solid:Bool=true, outline:Bool=false) {
-        
-        canvas.render(StrokeStyle(color:Color(red:64, green:64, blue:64)))
+
+        if outline {
+            canvas.render(StrokeStyle(color:Color(red:64, green:64, blue:64)))
+        } else {
+            var colorOutline = (red:color.red, green:color.green, blue:color.blue)
+            if color.red > 4 {
+                colorOutline.red -= 4
+            }
+            if color.green > 4 {
+                colorOutline.green -= 4
+            }
+            if color.blue > 4 {
+                colorOutline.blue -= 4
+            }
+            canvas.render(StrokeStyle(color:Color(red:colorOutline.red, green:colorOutline.green, blue:colorOutline.blue)))
+        }
         canvas.render(FillStyle(color:color))
         canvas.render(self.flatten(camera:camera, canvas:canvas, solid:solid, outline:outline))
     }

@@ -28,7 +28,7 @@ class generatingMap {
 class Background : RenderableEntity {
     static var world = World()
     static var seed : Int = 0
-    public let worldSize = (x:4, y:4, z:4)
+    public let worldSize = (x:8, y:4, z:8)
     let regionsToGenerate : Int
     static var regionsGenerated = 0
     let splashTxt = splashText()
@@ -67,19 +67,22 @@ class Background : RenderableEntity {
         }
         if generatingRegion.z >= worldSize.z {
             Background.generated = true
+            for _ in 0 ... worldSize.x*worldSize.z*2 {
+                createTree()
+            }
         }
         
     }
-
     
-
+    
+    
     func renderWorld(camera:Camera, canvas:Canvas) {
         
         if !Background.generated {
             stepGeneration(canvas:canvas)
-
+            
             renderNoise(canvas:canvas, quality:64, multiplier:64, frame:frame)
-
+            
             let regionMapSize = pixelsPerRegion
             for x in 0 ..< map.map.count {
                 for z in 0 ..< map.map[x].count {
@@ -155,5 +158,27 @@ class Background : RenderableEntity {
 
     func setBlock(at:BlockPoint3d, to:String) {
         Background.world.setBlock(at:at, to:to)
+    }
+
+    func createTree() {
+        let location = (x:Int.random(in:0...worldSize.x*16), z:Int.random(in:0...worldSize.z*16))
+        let initialBlock = BlockPoint3d(x:location.x,
+                                        y:33+Int(8*Noise(x:(location.x), z:location.z, seed:Background.seed)),
+                                        z:location.z)
+        //create leaves
+        for x in -2 ... 2 {
+            for y in 2 ... 4 {
+                for z in -2 ... 2 {
+                    if y < 3 || (x > -2 && x < 2 && z > -2 && z < 2) {
+                        setBlock(at:BlockPoint3d(x:initialBlock.x+x, y:initialBlock.y+y, z:initialBlock.z+z), to:"leaves")
+                    }
+                }
+            }
+        }
+        
+        //create log
+        for height in 0 ..< 4 {
+            setBlock(at:BlockPoint3d(x:initialBlock.x, y:initialBlock.y+height, z:initialBlock.z), to:"log")
+        }
     }
 }
