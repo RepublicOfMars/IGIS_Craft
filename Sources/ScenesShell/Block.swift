@@ -79,9 +79,14 @@ class Block {
 
     func renderBlock(camera:Camera, canvas:Canvas) {
         if type != "air" && self.isVisible() {
+            let pi = 3.1415926
+            let timeOfDayMultiplier : Double = Double((sin(Double(BackgroundLayer.frame)*(pi/2400)))+2)/Double(3)
             if !breaking {
                 breakValue = 0
-                Cube(center:location.convertToDouble()).renderCube(camera:camera, canvas:canvas, color:color, outline:selected)
+                let blockColor = Color(red:UInt8(Double(color.red) * timeOfDayMultiplier),
+                                       green:UInt8(Double(color.green) * timeOfDayMultiplier),
+                                       blue:UInt8(Double(color.blue) * timeOfDayMultiplier))
+                Cube(center:location.convertToDouble()).renderCube(camera:camera, canvas:canvas, color:blockColor, outline:selected)
             } else {
                 var colorMultiplier = 0.0
 
@@ -89,9 +94,9 @@ class Block {
                     colorMultiplier = 1.0-(Double(breakValue)/Double(hardness))
                 }
                 
-                let redBreak = UInt8(Double(color.red) * colorMultiplier)
-                let greenBreak = UInt8(Double(color.green) * colorMultiplier)
-                let blueBreak = UInt8(Double(color.blue) * colorMultiplier)
+                let redBreak = UInt8(Double(color.red) * colorMultiplier * timeOfDayMultiplier)
+                let greenBreak = UInt8(Double(color.green) * colorMultiplier * timeOfDayMultiplier)
+                let blueBreak = UInt8(Double(color.blue) * colorMultiplier * timeOfDayMultiplier)
                 Cube(center:location.convertToDouble()).renderCube(camera:camera, canvas:canvas, color:Color(red:redBreak, green:greenBreak, blue:blueBreak), outline:selected)
                 self.breaking = false
             }

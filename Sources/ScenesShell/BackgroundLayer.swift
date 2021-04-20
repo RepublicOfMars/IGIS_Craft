@@ -24,8 +24,6 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     var computerIsActive = false
     static let chat = Chat()
 
-    var frame = 0
-
     var initString = ""
 
     var typing = false
@@ -42,6 +40,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     var selectedBlock : BlockPoint3d? = nil
     var placeBlock : BlockPoint3d? = nil
     var mining = false
+
+    static var frame = 0
     
     init() {
         if !BackgroundLayer.playerJoined {
@@ -344,9 +344,14 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
         if computerIsActive {
             clearCanvas(canvas:canvas)
             let sky = Rectangle(rect:Rect(topLeft:Point(x:0, y:0), size:canvas.canvasSize!), fillMode:.fill)
+
+            let pi = 3.1415926
+            let timeOfDayMultiplier : Double = Double((sin(Double(BackgroundLayer.frame)*(pi/2400)))+1)/Double(2)
             
             canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
-            canvas.render(FillStyle(color:Color(red:128, green:128, blue:196)))
+            canvas.render(FillStyle(color:Color(red:UInt8(128*timeOfDayMultiplier),
+                                                green:UInt8(128*timeOfDayMultiplier),
+                                                blue:UInt8(196*timeOfDayMultiplier))))
             canvas.render(sky)
             
             canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
@@ -434,14 +439,15 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             if firstComputer {
                 initializeComputer()
             } else {
-                renderNoise(canvas:canvas, quality:16, multiplier:128, frame:frame, baseColor:Color(red:128, green:128, blue:128))
+                renderNoise(canvas:canvas, quality:16, multiplier:128, frame:BackgroundLayer.frame, baseColor:Color(red:128, green:128, blue:128))
                 canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
                 let initPrompt = Text(location:Point(x:canvas.canvasSize!.width/2, y:canvas.canvasSize!.height/2), text:"Multiplayer is currently unsupported.")
                 initPrompt.alignment = .center
                 initPrompt.font = "\(canvas.canvasSize!.height/16)pt Arial"
                 canvas.render(initPrompt)
-                frame += 1
             }
         }
+        
+        BackgroundLayer.frame += 1
     }
 }
