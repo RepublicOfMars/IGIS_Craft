@@ -344,8 +344,12 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
         if computerIsActive {
             clearCanvas(canvas:canvas)
             
-            let sunAngle = (Double(BackgroundLayer.frame)/1440)*180
+            var sunAngle = (Double(BackgroundLayer.frame)/1440)*180
             let sky = Rectangle(rect:Rect(topLeft:Point(x:0, y:0), size:canvas.canvasSize!), fillMode:.fill)
+
+            while sunAngle > 360 {
+                sunAngle -= 360
+            }
             
             var timeOfDayMultiplier = 1.0
             if sunAngle > 170 && sunAngle < 200 {
@@ -392,6 +396,30 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             sunPath.renderPath(camera:BackgroundLayer.cameras[thisComputer],
                                canvas:canvas,
                                color:Color(red:UInt8(255*timeOfDayMultiplier), green:UInt8(255*timeOfDayMultiplier), blue:UInt8(196*timeOfDayMultiplier)),
+                               solid:true,
+                               outline:false)
+            //render the moon
+            let moonPath = Path3d()
+            let moonTurtle = Turtle3d()
+            moonTurtle.x = BackgroundLayer.cameras[thisComputer].x
+            moonTurtle.y = BackgroundLayer.cameras[thisComputer].y
+            moonTurtle.z = BackgroundLayer.cameras[thisComputer].z
+            moonTurtle.rotate(yaw:90)
+            moonTurtle.rotate(pitch:sunAngle+180)
+
+            moonTurtle.forward(steps:32)
+            moonTurtle.rotate(pitch:90)
+            moonTurtle.forward(steps:1)
+            moonPath.lineTo(Point3d(x:moonTurtle.x, y:moonTurtle.y, z:moonTurtle.z+1))
+            moonPath.lineTo(Point3d(x:moonTurtle.x, y:moonTurtle.y, z:moonTurtle.z-1))
+            moonTurtle.rotate(pitch:-180)
+            moonTurtle.forward(steps:2)
+            moonPath.lineTo(Point3d(x:moonTurtle.x, y:moonTurtle.y, z:moonTurtle.z-1))
+            moonPath.lineTo(Point3d(x:moonTurtle.x, y:moonTurtle.y, z:moonTurtle.z+1))
+            
+            moonPath.renderPath(camera:BackgroundLayer.cameras[thisComputer],
+                               canvas:canvas,
+                               color:Color(red:UInt8(128), green:UInt8(128), blue:UInt8(128+68*(timeOfDayMultiplier))),
                                solid:true,
                                outline:false)
             
