@@ -23,11 +23,11 @@ class Turtle3d {
     }
     
     func correctRotation() {
-        if pitch > 90 {
-            pitch = 90
+        if pitch > 180 {
+            pitch -= 360
         }
-        if pitch < -90 {
-            pitch = -90
+        if pitch < -180 {
+            pitch += 360
         }
         
         if yaw > 180 {
@@ -41,6 +41,8 @@ class Turtle3d {
     func rotate(pitch:Double=0, yaw:Double=0) {
         self.pitch += pitch
         self.yaw += yaw
+
+        correctRotation()
     }
     
     func absVal(_ n: Double) -> Double {

@@ -343,10 +343,23 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
         
         if computerIsActive {
             clearCanvas(canvas:canvas)
+            
+            let sunAngle = (Double(BackgroundLayer.frame)/1440)*180
             let sky = Rectangle(rect:Rect(topLeft:Point(x:0, y:0), size:canvas.canvasSize!), fillMode:.fill)
-
-            let pi = 3.1415926
-            let timeOfDayMultiplier : Double = Double((sin(Double(BackgroundLayer.frame)*(pi/2400)))+1)/Double(2)
+            
+            var timeOfDayMultiplier = 1.0
+            if sunAngle > 170 && sunAngle < 200 {
+                timeOfDayMultiplier = (200.0 - sunAngle) / 30
+            }
+            if sunAngle >= 200 && sunAngle <= 340 {
+                timeOfDayMultiplier = 0.0
+            }
+            if sunAngle > 340 {
+                timeOfDayMultiplier = (sunAngle - 340) / 30
+            }
+            if sunAngle < 10 {
+                timeOfDayMultiplier = (sunAngle + 20) / 30
+            }
             
             canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
             canvas.render(FillStyle(color:Color(red:UInt8(128*timeOfDayMultiplier),
@@ -356,12 +369,37 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
             
             canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
             canvas.render(FillStyle(color:Color(red:128, green:128, blue:128)))
+
+            //render the sun
+            let sunPath = Path3d()
+            let sunTurtle = Turtle3d()
+            sunTurtle.x = BackgroundLayer.cameras[thisComputer].x
+            sunTurtle.y = BackgroundLayer.cameras[thisComputer].y
+            sunTurtle.z = BackgroundLayer.cameras[thisComputer].z
+            sunTurtle.rotate(yaw:90)
+            sunTurtle.rotate(pitch:sunAngle)
+
+            sunTurtle.forward(steps:32)
+            sunTurtle.rotate(pitch:90)
+            sunTurtle.forward(steps:1)
+            sunPath.lineTo(Point3d(x:sunTurtle.x, y:sunTurtle.y, z:sunTurtle.z+1))
+            sunPath.lineTo(Point3d(x:sunTurtle.x, y:sunTurtle.y, z:sunTurtle.z-1))
+            sunTurtle.rotate(pitch:-180)
+            sunTurtle.forward(steps:2)
+            sunPath.lineTo(Point3d(x:sunTurtle.x, y:sunTurtle.y, z:sunTurtle.z-1))
+            sunPath.lineTo(Point3d(x:sunTurtle.x, y:sunTurtle.y, z:sunTurtle.z+1))
+
+            sunPath.renderPath(camera:BackgroundLayer.cameras[thisComputer],
+                               canvas:canvas,
+                               color:Color(red:UInt8(255*timeOfDayMultiplier), green:UInt8(255*timeOfDayMultiplier), blue:UInt8(196*timeOfDayMultiplier)),
+                               solid:true,
+                               outline:false)
             
             BackgroundLayer.background.renderWorld(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas)
 
             if Background.generated {
                 
-                canvas.render(FillStyle(color:Color(red:0, green:0, blue:0)))
+                canvas.render(FillStyle(color:Color(red:UInt8(192*(1-timeOfDayMultiplier)), green:UInt8(192*(1-timeOfDayMultiplier)), blue:UInt8(192*(1-timeOfDayMultiplier)))))
                 let cameraPosText = Text(location:Point(x:20, y:20), text:"Camera Position:", fillMode:.fill)
                 cameraPosText.alignment = .left
                 cameraPosText.font = "8pt Arial"
@@ -379,6 +417,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     canvas.render(Text(location:Point(x:20, y:100), text:"Current block: \(currentBlock.type)", fillMode:.fill))
                 }
                 canvas.render(Text(location:Point(x:20, y:110), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:120), text:"Frame: \(BackgroundLayer.frame), Sun Angle: \(Int(sunAngle)%360)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
                 
                 //show selected block

@@ -79,8 +79,22 @@ class Block {
 
     func renderBlock(camera:Camera, canvas:Canvas) {
         if type != "air" && self.isVisible() {
-            let pi = 3.1415926
-            let timeOfDayMultiplier : Double = Double((sin(Double(BackgroundLayer.frame)*(pi/2400)))+2)/Double(3)
+            let sunAngle = (Double(BackgroundLayer.frame)/1440)*180
+            
+            var timeOfDayMultiplier = 1.0
+            if sunAngle > 170 && sunAngle < 200 {
+                timeOfDayMultiplier = (200.0 - sunAngle) / 45 + 1/3
+            }
+            if sunAngle >= 200 && sunAngle <= 340 {
+                timeOfDayMultiplier = 1/3
+            }
+            if sunAngle > 340 {
+                timeOfDayMultiplier = (sunAngle - 340) / 45
+            }
+            if sunAngle < 10 {
+                timeOfDayMultiplier = (sunAngle + 20) / 45 + 1/3
+            }
+            
             if !breaking {
                 breakValue = 0
                 let blockColor = Color(red:UInt8(Double(color.red) * timeOfDayMultiplier),
