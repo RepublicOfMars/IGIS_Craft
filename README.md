@@ -8,6 +8,7 @@ A recreation of the video game Minecraft using Igis and Scenes.
 * U - Break block
 * O - Place block
 * Space - Jump
+* ZC - Scroll hotbar left/right
 
 ## Links
 * Igis:
