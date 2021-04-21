@@ -51,12 +51,14 @@ class Block {
         }
     }
 
-    func mine() {
+    func mine()  {
         breaking = true
         if hardness > 0 {
             breakValue += 1
         }
         if breakValue >= hardness {
+            let _ = BackgroundLayer.inventory.giveItem(self.type)
+            
             self.type = "air"
             self.breaking = false
             self.breakValue = 0

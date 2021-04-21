@@ -42,6 +42,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     var mining = false
 
     static var frame = 0
+
+    static let inventory = Inventory()
     
     init() {
         if !BackgroundLayer.playerJoined {
@@ -241,23 +243,29 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 case "KeyL":
                     cameraIsRotating.right = true
                 case "KeyW": //Movement
-                    cameraVelocity.forward = 0.5
+                    cameraVelocity.forward = 1
                 case "KeyS":
-                    cameraVelocity.forward = -0.5
+                    cameraVelocity.forward = -1
                 case "KeyA":
-                    cameraVelocity.left = 0.5
+                    cameraVelocity.left = 1
                 case "KeyD":
-                    cameraVelocity.left = -0.5
+                    cameraVelocity.left = -1
                 case "KeyU": //Break block
                     mining = true
                 case "KeyO": //Place block
                     if let location = placeBlock {
-                        BackgroundLayer.background.setBlock(at:location, to:"grass")
+                        if BackgroundLayer.inventory.place() {
+                            BackgroundLayer.background.setBlock(at:location, to:BackgroundLayer.inventory.selected())   
+                        }
                     }
                 case "Space": //jump
                     if onGround {
                         cameraVelocity.up += 2.0
                     }
+                case "KeyZ":
+                    BackgroundLayer.inventory.scroll(right:false)
+                case "KeyC":
+                    BackgroundLayer.inventory.scroll()
                 case "Enter":
                     typing = true
                 case "Slash":
@@ -499,6 +507,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     crosshair.right(degrees:90)
                 }
                 canvas.render(crosshair)
+
+                //render inventory
+                BackgroundLayer.inventory.renderInventory(canvas:canvas)
             }
             BackgroundLayer.chat.render(canvas:canvas)
         } else {
