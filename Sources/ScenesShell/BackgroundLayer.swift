@@ -196,7 +196,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 } else {
                     leftRay.forward(steps:-1/16)
                 }
-
+                
                 if let leftRayBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(leftRay.x), y:Int(leftRay.y), z:Int(leftRay.z))) {
                     if leftRayBlock.type != "air" {
                         leftCollision = true
@@ -233,46 +233,54 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     func onKeyDown(key:String, code:String, ctrlKey:Bool, shiftKey:Bool, altKey:Bool, metaKey:Bool) {
         if computerIsActive {
             if !typing {
-                switch code {
-                case "KeyI": //Rotation
-                    cameraIsRotating.up = true
-                case "KeyK":
-                    cameraIsRotating.down = true
-                case "KeyJ":
-                    cameraIsRotating.left = true
-                case "KeyL":
-                    cameraIsRotating.right = true
-                case "KeyW": //Movement
-                    cameraVelocity.forward = 1
-                case "KeyS":
-                    cameraVelocity.forward = -1
-                case "KeyA":
-                    cameraVelocity.left = 1
-                case "KeyD":
-                    cameraVelocity.left = -1
-                case "KeyU": //Break block
-                    mining = true
-                case "KeyO": //Place block
-                    if let location = placeBlock {
-                        if BackgroundLayer.inventory.place() {
-                            BackgroundLayer.background.setBlock(at:location, to:BackgroundLayer.inventory.selected())   
+                if !BackgroundLayer.inventory.isOpen() {
+                    switch code {
+                    case "KeyI": //Rotation
+                        cameraIsRotating.up = true
+                    case "KeyK":
+                        cameraIsRotating.down = true
+                    case "KeyJ":
+                        cameraIsRotating.left = true
+                    case "KeyL":
+                        cameraIsRotating.right = true
+                    case "KeyW": //Movement
+                        cameraVelocity.forward = 1
+                    case "KeyS":
+                        cameraVelocity.forward = -1
+                    case "KeyA":
+                        cameraVelocity.left = 1
+                    case "KeyD":
+                        cameraVelocity.left = -1
+                    case "KeyU": //Break block
+                        mining = true
+                    case "KeyO": //Place block
+                        if let location = placeBlock {
+                            if BackgroundLayer.inventory.place() {
+                                BackgroundLayer.background.setBlock(at:location, to:BackgroundLayer.inventory.selected())   
+                            }
                         }
+                    case "Space": //jump
+                        if onGround {
+                            cameraVelocity.up += 2.0
+                        }
+                    case "KeyZ":
+                        BackgroundLayer.inventory.scroll(right:false)
+                    case "KeyC":
+                        BackgroundLayer.inventory.scroll()
+                    case "Enter":
+                        typing = true
+                    case "Slash":
+                        typing = true
+                        command.append("/")
+                    case "KeyE": //open inventory
+                        BackgroundLayer.inventory.toggle()
+                    default:
+                        Void()
                     }
-                case "Space": //jump
-                    if onGround {
-                        cameraVelocity.up += 2.0
+                } else {
+                    if code == "KeyE" || code == "Escape" {
+                        BackgroundLayer.inventory.toggle()
                     }
-                case "KeyZ":
-                    BackgroundLayer.inventory.scroll(right:false)
-                case "KeyC":
-                    BackgroundLayer.inventory.scroll()
-                case "Enter":
-                    typing = true
-                case "Slash":
-                    typing = true
-                    command.append("/")
-                default:
-                    Void()
                 }
             } else {
                 //input

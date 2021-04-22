@@ -36,6 +36,9 @@ class Block {
         case "log":
             color = Color(red:96, green:64, blue:48)
             hardness = 16
+        case "planks":
+            color = Color(red:144, green:96, blue:72)
+            hardness = 16
         case "leaves":
             color = Color(red:16, green:96, blue:16)
             hardness = 4
