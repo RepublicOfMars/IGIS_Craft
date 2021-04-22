@@ -9,6 +9,7 @@ A recreation of the video game Minecraft using Igis and Scenes.
 * O - Place block
 * Space - Jump
 * ZC - Scroll hotbar left/right
+* E - Open inventory screen
 
 ## Links
 * Igis:
