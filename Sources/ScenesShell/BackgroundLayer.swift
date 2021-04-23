@@ -14,7 +14,7 @@ func absVal(_ n: Double) -> Double {
     return n
 }
 
-class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
+class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, MouseDownHandler {
     static let seed = Int.random(in:0...256)
     
     static let background = Background(seed:seed)
@@ -75,6 +75,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     override func preSetup(canvasSize:Size, canvas:Canvas) {
         dispatcher.registerKeyDownHandler(handler: self)
         dispatcher.registerKeyUpHandler(handler: self)
+        dispatcher.registerMouseMoveHandler(handler: self)
+        dispatcher.registerMouseDownHandler(handler: self)
     }
 
     override func preCalculate(canvas:Canvas) {
@@ -228,6 +230,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
     override func postTeardown() {
         dispatcher.unregisterKeyDownHandler(handler: self)
         dispatcher.unregisterKeyUpHandler(handler: self)
+        dispatcher.unregisterMouseMoveHandler(handler: self)
+        dispatcher.unregisterMouseDownHandler(handler: self)
     }
 
     func onKeyDown(key:String, code:String, ctrlKey:Bool, shiftKey:Bool, altKey:Bool, metaKey:Bool) {
@@ -345,6 +349,15 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                 }
             }
         }
+    }
+
+    func onMouseMove(globalLocation:Point, movement:Point) {
+        BackgroundLayer.inventory.hoverOver(point:globalLocation)
+    }
+
+    func onMouseDown(globalLocation:Point) {
+        BackgroundLayer.inventory.hoverOver(point:globalLocation)
+        BackgroundLayer.inventory.click()
     }
 
     func clearCanvas(canvas:Canvas) {
@@ -496,10 +509,13 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler {
                     blocksForward += 1/16
                 }
 
-                
+                //process mining
                 if mining {
                     if let blockToBreak = selectedBlock {
-                        BackgroundLayer.background.setBlock(at:blockToBreak, to:"mine")
+                        if let block = BackgroundLayer.background.getBlock(at:blockToBreak) {
+                            let multiplier = BackgroundLayer.inventory.miningMultiplier(block:block.type)
+                            BackgroundLayer.background.setBlock(at:blockToBreak, to:"m\(multiplier)")
+                        }
                     }
                 }
                 

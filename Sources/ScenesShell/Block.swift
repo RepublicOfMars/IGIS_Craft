@@ -1,4 +1,3 @@
-
 import Igis
 import Scenes
 import Foundation
@@ -24,6 +23,9 @@ class Block {
         case "iron_ore":
             color = Color(red:164, green:132, blue:128)
             hardness = 32
+        case "coal_ore":
+            color = Color(red:32, green:32, blue:32)
+            hardness = 32
         case "stone":
             color = Color(red:128, green:128, blue:128)
             hardness = 32
@@ -37,7 +39,7 @@ class Block {
             color = Color(red:96, green:64, blue:48)
             hardness = 16
         case "planks":
-            color = Color(red:144, green:96, blue:72)
+            color = Color(red:128, green:96, blue:32)
             hardness = 16
         case "leaves":
             color = Color(red:16, green:96, blue:16)
@@ -54,13 +56,22 @@ class Block {
         }
     }
 
-    func mine()  {
+    func mine(_ multiplier:Int=1)  {
         breaking = true
         if hardness > 0 {
-            breakValue += 1
+            breakValue += multiplier
         }
         if breakValue >= hardness {
-            let _ = BackgroundLayer.inventory.giveItem(self.type)
+            if BackgroundLayer.inventory.miningMultiplier(block:self.type).canMine {
+                switch self.type {
+                case "diamond_ore":
+                    let _ = BackgroundLayer.inventory.giveItem("diamond")
+                case "coal_ore":
+                    let _ = BackgroundLayer.inventory.giveItem("coal")
+                default:
+                    let _ = BackgroundLayer.inventory.giveItem(self.type)
+                }
+            }
             
             self.type = "air"
             self.breaking = false

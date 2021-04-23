@@ -102,8 +102,10 @@ class Chunk {
                     if self.Blocks[y][x][z].location.isEqual(to:at) {
                         if to == "selected" {
                             self.Blocks[y][x][z].selected = true
-                        } else if to == "mine" {
-                            self.Blocks[y][x][z].mine()
+                        } else if to.first == "m" {
+                            var multiplier = to
+                            multiplier = String(multiplier.dropFirst())
+                            self.Blocks[y][x][z].mine(Int(multiplier)!)
                         } else {
                             self.Blocks[y][x][z].type = to
                         }
