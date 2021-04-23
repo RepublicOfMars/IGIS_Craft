@@ -44,6 +44,27 @@ class Inventory {
                                       itemOut:("wooden_axe", 1)))
         recipes.append(CraftingRecipe(itemsIn:[("planks", 1), ("sticks", 2)],
                                       itemOut:("wooden_shovel", 1)))
+        
+        recipes.append(CraftingRecipe(itemsIn:[("stone", 3), ("sticks", 2)],
+                                      itemOut:("stone_pickaxe", 1)))
+        recipes.append(CraftingRecipe(itemsIn:[("stone", 3), ("sticks", 2)],
+                                      itemOut:("stone_axe", 1)))
+        recipes.append(CraftingRecipe(itemsIn:[("stone", 1), ("sticks", 2)],
+                                      itemOut:("stone_shovel", 1)))
+        
+        recipes.append(CraftingRecipe(itemsIn:[("iron_ingot", 3), ("sticks", 2)],
+                                      itemOut:("iron_pickaxe", 1)))
+        recipes.append(CraftingRecipe(itemsIn:[("iron_ingot", 3), ("sticks", 2)],
+                                      itemOut:("iron_axe", 1)))
+        recipes.append(CraftingRecipe(itemsIn:[("iron_ingot", 1), ("sticks", 2)],
+                                      itemOut:("iron_shovel", 1)))
+        
+        recipes.append(CraftingRecipe(itemsIn:[("diamond", 3), ("sticks", 2)],
+                                      itemOut:("diamond_pickaxe", 1)))
+        recipes.append(CraftingRecipe(itemsIn:[("diamond", 3), ("sticks", 2)],
+                                      itemOut:("diamond_axe", 1)))
+        recipes.append(CraftingRecipe(itemsIn:[("diamond", 1), ("sticks", 2)],
+                                      itemOut:("diamond_shovel", 1)))
 
         tools = []
         tools.append(Tool(type:"pickaxe", material:"none"))
@@ -288,14 +309,15 @@ class Inventory {
                 for itemIn in recipe.itemsIn {
                     itemsInString += ", \(itemIn.count) \(itemIn.name)"
                 }
-                let _ = itemsInString.dropFirst()
-                let _ = itemsInString.dropFirst()
+                for _ in 0 ..< 2 {
+                    itemsInString = String(itemsInString.dropFirst())
+                }
                 let itemsInText = Text(location:Point(x:center.x-(craftingRecipePanelSize.width/4), y:center.y), text:itemsInString)
                 let itemOutText = Text(location:Point(x:center.x+(craftingRecipePanelSize.width/4), y:center.y), text:"\(recipe.itemOut.count) \(recipe.itemOut.name)")
 
-                arrowText.font = "\(craftingRecipePanelSize.height/6)pt Arial"
-                itemsInText.font = "\(craftingRecipePanelSize.height/6)pt Arial"
-                itemOutText.font = "\(craftingRecipePanelSize.height/6)pt Arial"
+                arrowText.font = "\(craftingRecipePanelSize.height/4)pt Arial"
+                itemsInText.font = "\(craftingRecipePanelSize.height/4)pt Arial"
+                itemOutText.font = "\(craftingRecipePanelSize.height/4)pt Arial"
                 
                 canvas.render(FillStyle(color:Color(red:0, green:0, blue:0)))
                 

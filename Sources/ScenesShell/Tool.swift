@@ -45,8 +45,18 @@ class Tool {
                 return (multiplier:2 * materialMultiplier(), canMine:true)
             }
             return (multiplier:1, canMine:true)
-        case "stone", "iron_ore", "diamond_ore":
+        case "stone":
             if type == "pickaxe" && material != "none" {
+                return (multiplier:2 * materialMultiplier(), canMine:true)
+            }
+            return (multiplier:1, canMine:false)
+        case "coal_ore", "iron_ore":
+            if type == "pickaxe" && (material != "none" && material != "wooden") {
+                return (multiplier:2 * materialMultiplier(), canMine:true)
+            }
+            return (multiplier:1, canMine:false)
+        case "diamond_ore":
+            if type == "pickaxe" && (material == "iron" || material == "diamond") {
                 return (multiplier:2 * materialMultiplier(), canMine:true)
             }
             return (multiplier:1, canMine:false)

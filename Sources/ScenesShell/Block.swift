@@ -58,24 +58,24 @@ class Block {
 
     func mine(_ multiplier:Int=1)  {
         breaking = true
-        if hardness > 0 {
+        if type != "bedrock" {
             breakValue += multiplier
-        }
-        if breakValue >= hardness {
-            if BackgroundLayer.inventory.miningMultiplier(block:self.type).canMine {
-                switch self.type {
-                case "diamond_ore":
-                    let _ = BackgroundLayer.inventory.giveItem("diamond")
-                case "coal_ore":
-                    let _ = BackgroundLayer.inventory.giveItem("coal")
-                default:
-                    let _ = BackgroundLayer.inventory.giveItem(self.type)
+            if breakValue >= hardness {
+                if BackgroundLayer.inventory.miningMultiplier(block:self.type).canMine {
+                    switch self.type {
+                    case "diamond_ore":
+                        let _ = BackgroundLayer.inventory.giveItem("diamond")
+                    case "coal_ore":
+                        let _ = BackgroundLayer.inventory.giveItem("coal")
+                    default:
+                        let _ = BackgroundLayer.inventory.giveItem(self.type)
+                    }
                 }
+                
+                self.type = "air"
+                self.breaking = false
+                self.breakValue = 0
             }
-            
-            self.type = "air"
-            self.breaking = false
-            self.breakValue = 0
         }
     }
 

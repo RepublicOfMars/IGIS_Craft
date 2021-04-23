@@ -12,7 +12,10 @@ class CraftingRecipe {
         tempInventory.setBlocks(inventory.getBlocks())
         tempInventory.setCollectables(inventory.getCollectables())
         var success = true
-        let toolNames = ["wooden_pickaxe", "wooden_axe", "wooden_shovel"]
+        let toolNames = ["wooden_pickaxe", "wooden_axe", "wooden_shovel",
+                         "stone_pickaxe", "stone_axe", "stone_shovel",
+                         "iron_pickaxe", "iron_axe", "iron_shovel",
+                         "diamond_pickaxe", "diamond_axe", "diamond_shovel"]
 
         if !toolNames.contains(itemOut.name) {
             for item in itemsIn {

@@ -31,6 +31,9 @@ class Chunk {
                         if y + self.location.y*self.chunkSize <= 16 && Int.random(in:1...64) == 1 {
                             type = "iron_ore"
                         }
+                        if y + self.location.y*self.chunkSize <= 24 && Int.random(in:1...32) == 1 {
+                            type = "coal_ore"
+                        }
                     } else if y + self.location.y*self.chunkSize <= terrainHeight-1 {
                         type = "dirt"
                     } else if y + self.location.y*self.chunkSize <= terrainHeight {
