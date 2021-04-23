@@ -513,7 +513,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 if mining {
                     if let blockToBreak = selectedBlock {
                         if let block = BackgroundLayer.background.getBlock(at:blockToBreak) {
-                            let multiplier = BackgroundLayer.inventory.miningMultiplier(block:block.type)
+                            let multiplier = BackgroundLayer.inventory.miningMultiplier(block:block.type).multiplier
                             BackgroundLayer.background.setBlock(at:blockToBreak, to:"m\(multiplier)")
                         }
                     }
