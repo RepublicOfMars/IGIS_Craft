@@ -236,7 +236,7 @@ class SimpleWorld {
             canvas.render(FillStyle(color:Color(red:255, green:255, blue:0)))
             canvas.render(splash)
 
-            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.3.1 (new world generation test)")
+            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.3.1")
             version.font = "\((canvas.canvasSize!.height/64))pt Arial"
             version.baseline = .bottom
             version.alignment = .left

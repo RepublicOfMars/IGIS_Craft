@@ -4,7 +4,7 @@ public func splashText() -> String {
                 "Now with Physics!",
                 "Now with Trees!",
                 "Mr.Ben is cool!",
-                "2500+ lines of code!",
+                "2200+ lines of code!",
                 "Swift Edition!",
                 "100% guaranteed, almost bug free!",
                 "Singleplayer!",
