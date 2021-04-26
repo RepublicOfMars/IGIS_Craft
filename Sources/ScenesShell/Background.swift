@@ -5,26 +5,6 @@ import Igis
  This class is responsible for rendering the background.
  */
 
-class generatingMap {
-    var map : [[Int]]
-    let size : (x:Int, z:Int)
-    
-    init(x:Int, z:Int) {
-        size = (x:x, z:z)
-        map = []
-        for x in 0 ..< size.x {
-            map.append([])
-            for _ in 0 ..< size.z {
-                map[x].append(0)
-            }
-        }
-    }
-
-    func changePixel(x:Int, z:Int, to:Int) {
-        map[x][z] = to
-    }
-}
-
 class Background : RenderableEntity {
     static var world = World()
     static var seed : Int = 0
