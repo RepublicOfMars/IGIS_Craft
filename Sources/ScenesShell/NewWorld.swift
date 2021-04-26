@@ -128,10 +128,12 @@ class SimpleWorld {
     private func nearbyBlocks(cameraPosition:Point3d) -> [Block] {
         var output : [Block] = []
         var workingArray : [Double] = []
+
+        let renderDistance = 3
         
-        for y in horizontalInBounds(Int(cameraPosition.x)-6) ... horizontalInBounds(Int(cameraPosition.x)+6) {
-            for x in verticalInBounds(Int(cameraPosition.y)-6) ... verticalInBounds(Int(cameraPosition.y)+6) {
-                for z in horizontalInBounds(Int(cameraPosition.z)-6) ... horizontalInBounds(Int(cameraPosition.z)+6) {
+        for y in verticalInBounds(Int(cameraPosition.y)-renderDistance) ... verticalInBounds(Int(cameraPosition.y)+renderDistance) {
+            for x in horizontalInBounds(Int(cameraPosition.x)-renderDistance) ... horizontalInBounds(Int(cameraPosition.x)+renderDistance) {
+                for z in horizontalInBounds(Int(cameraPosition.z)-renderDistance) ... horizontalInBounds(Int(cameraPosition.z)+renderDistance) {
                     output.append(Blocks[y][x][z])
                     workingArray.append(Blocks[y][x][z].location.convertToDouble().distanceFrom(point:cameraPosition))
                 }
@@ -140,11 +142,11 @@ class SimpleWorld {
         
         return mergeSort(output, by:workingArray) as! [Block]
     }
-
+    
     public func getBlock(at:BlockPoint3d) -> Block {
         return Blocks[verticalInBounds(at.y)][horizontalInBounds(at.x)][horizontalInBounds(at.z)]
     }
-
+    
     public func setBlock(at:BlockPoint3d, to:String) {
         if to == "selected" {
             Blocks[verticalInBounds(at.y)][horizontalInBounds(at.x)][horizontalInBounds(at.z)].selected = true
@@ -157,11 +159,35 @@ class SimpleWorld {
         }
         Blocks[verticalInBounds(at.y)][horizontalInBounds(at.x)][horizontalInBounds(at.z)].updateBlock()
     }
+    
+    private func createTree(at:BlockPoint3d) {
+        let trunkHeight = Int.random(in:3...5)
+        //create leaves
+        for x in -2 ... 2 {
+            for z in -2 ... 2 {
+                for y in -2 ... -1 {
+                    setBlock(at:BlockPoint3d(x:at.x+x, y:at.y+y+trunkHeight, z:at.z+z), to:"leaves")
+                }
+            }
+        }
+        for x in -1 ... 1 {
+            for z in -1 ... 1 {
+                for y in 0 ... 1 {
+                    setBlock(at:BlockPoint3d(x:at.x+x, y:at.y+y+trunkHeight, z:at.z+z), to:"leaves")
+                }
+            }
+        }
+        
+        //create trunk
+        for y in 0 ..< trunkHeight {
+            setBlock(at:BlockPoint3d(x:at.x, y:at.y+y, z:at.z), to:"log")
+        }
+    }
 
     public func render(camera:Camera, canvas:Canvas) {
         if generating {
             //generation
-            let blocksPerFrame = 64
+            let blocksPerFrame = 256
             for _ in 0 ..< blocksPerFrame {
                 generate(x:blockGenerating.x, z:blockGenerating.z)
                 
@@ -171,6 +197,10 @@ class SimpleWorld {
                     blockGenerating.x += 1
                 }
                 if blockGenerating.x >= worldSize.horizontal {
+                    for _ in 0 ..< 256 {
+                        let treeLocation = (x:Int.random(in:0..<worldSize.horizontal), z:Int.random(in:0..<worldSize.horizontal))
+                        createTree(at:BlockPoint3d(x:treeLocation.x, y:32 + Int(8.0*(Noise(x:treeLocation.x, z:treeLocation.z, seed:seed))), z:treeLocation.z))
+                    }
                     generating = false
                 }
             }

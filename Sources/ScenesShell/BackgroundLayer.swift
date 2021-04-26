@@ -17,7 +17,7 @@ func absVal(_ n: Double) -> Double {
 class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, MouseDownHandler {
     static let seed = Int.random(in:0...256)
     
-    static let background = Background(seed:seed)
+    let background = Background()
     static var cameras : [Camera] = []
     static var computerCount = 0
     var thisComputer = 0
@@ -41,6 +41,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
     var placeBlock : BlockPoint3d? = nil
     var mining = false
 
+    let world : SimpleWorld
+
     static var frame = 0
 
     static let inventory = Inventory()
@@ -53,19 +55,22 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
         
         BackgroundLayer.computerCount += 1
         thisComputer = BackgroundLayer.computerCount - 1
+
+        world = SimpleWorld(seed:BackgroundLayer.seed)
         
         // Using a meaningful name can be helpful for debugging
         super.init(name:"Background")
 
         // We insert our RenderableEntities in the constructor
-        insert(entity:BackgroundLayer.background, at:.back)
+        insert(entity:background, at:.back)
     }
 
     func initializeComputer() {
         BackgroundLayer.cameras.append(Camera())
         computerIsActive = true
 
-        let spawnLocation = (x:Int.random(in:0..<16*BackgroundLayer.background.worldSize.x), z:Int.random(in:0..<16*BackgroundLayer.background.worldSize.x))
+        let spawnLocation = (x:Int.random(in:0..<world.worldSize.horizontal),
+                             z:Int.random(in:0..<world.worldSize.horizontal))
 
         let spawnHeight = 32 + Int(8.0*(+Noise(x:spawnLocation.x, z:spawnLocation.z, seed:BackgroundLayer.seed)))
         
@@ -80,7 +85,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
     }
 
     override func preCalculate(canvas:Canvas) {
-        if computerIsActive && Background.generated {
+        if computerIsActive && !world.generating {
             
             if cameraIsRotating.up{BackgroundLayer.cameras[thisComputer].cameraRotateUp()}
             if cameraIsRotating.down{BackgroundLayer.cameras[thisComputer].cameraRotateDown()}
@@ -105,11 +110,11 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             var verticalCollision = false
 
             while verticalRayDistance < absVal(cameraVelocity.up) && !verticalCollision {
-                if let verticalRayBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(verticalRay.x), y:Int(verticalRay.y), z:Int(verticalRay.z))) {
-                    if verticalRayBlock.type != "air" {
-                        verticalCollision = true
-                    }
+                let verticalRayBlock = world.getBlock(at:BlockPoint3d(x:Int(verticalRay.x), y:Int(verticalRay.y), z:Int(verticalRay.z)))
+                if verticalRayBlock.type != "air" {
+                    verticalCollision = true
                 }
+                
                 if !verticalCollision {
                     verticalRayDistance += 1/32
                     verticalRay.forward(steps:1/32)
@@ -154,16 +159,14 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                     forwardRay.forward(steps:-1/16)
                 }
 
-                if let forwardRayBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(forwardRay.x), y:Int(forwardRay.y), z:Int(forwardRay.z))) {
-                    if forwardRayBlock.type != "air" {
-                        forwardCollision = true
-                    }
+                let forwardRayBlock = world.getBlock(at:BlockPoint3d(x:Int(forwardRay.x), y:Int(forwardRay.y), z:Int(forwardRay.z)))
+                if forwardRayBlock.type != "air" {
+                    forwardCollision = true
                 }
                 
-                if let forwardRayBelowBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(forwardRay.x), y:Int(forwardRay.y)-1, z:Int(forwardRay.z))) {
-                    if forwardRayBelowBlock.type != "air" {
-                        forwardCollision = true
-                    }
+                let forwardRayBelowBlock = world.getBlock(at:BlockPoint3d(x:Int(forwardRay.x), y:Int(forwardRay.y)-1, z:Int(forwardRay.z)))
+                if forwardRayBelowBlock.type != "air" {
+                    forwardCollision = true
                 }
             }
 
@@ -199,17 +202,17 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                     leftRay.forward(steps:-1/16)
                 }
                 
-                if let leftRayBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(leftRay.x), y:Int(leftRay.y), z:Int(leftRay.z))) {
-                    if leftRayBlock.type != "air" {
-                        leftCollision = true
-                    }
+                let leftRayBlock = world.getBlock(at:BlockPoint3d(x:Int(leftRay.x), y:Int(leftRay.y), z:Int(leftRay.z)))
+                if leftRayBlock.type != "air" {
+                    leftCollision = true
                 }
                 
-                if let leftRayBelowBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(leftRay.x), y:Int(leftRay.y)-1, z:Int(leftRay.z))) {
-                    if leftRayBelowBlock.type != "air" {
-                        leftCollision = true
-                    }
+                
+                let leftRayBelowBlock = world.getBlock(at:BlockPoint3d(x:Int(leftRay.x), y:Int(leftRay.y)-1, z:Int(leftRay.z)))
+                if leftRayBelowBlock.type != "air" {
+                    leftCollision = true
                 }
+                
             }
 
             if leftCollision {
@@ -260,7 +263,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                     case "KeyO": //Place block
                         if let location = placeBlock {
                             if BackgroundLayer.inventory.place() {
-                                BackgroundLayer.background.setBlock(at:location, to:BackgroundLayer.inventory.selected())   
+                                world.setBlock(at:location, to:BackgroundLayer.inventory.selected())   
                             }
                         }
                     case "Space": //jump
@@ -452,9 +455,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                                solid:true,
                                outline:false)
             
-            BackgroundLayer.background.renderWorld(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas)
+            world.render(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas)
 
-            if Background.generated {
+            if !world.generating {
                 
                 canvas.render(FillStyle(color:Color(red:UInt8(192*(1-timeOfDayMultiplier)), green:UInt8(192*(1-timeOfDayMultiplier)), blue:UInt8(192*(1-timeOfDayMultiplier)))))
                 let cameraPosText = Text(location:Point(x:20, y:20), text:"Camera Position:", fillMode:.fill)
@@ -467,14 +470,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(BackgroundLayer.cameras[thisComputer].pitch)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: 8", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:90), text:"Currently Loaded Regions: \(BackgroundLayer.background.loadedRegions())", fillMode:.fill))
-                if let currentBlock = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(BackgroundLayer.cameras[thisComputer].x),
-                                                                                          y:Int(BackgroundLayer.cameras[thisComputer].y),
-                                                                                          z:Int(BackgroundLayer.cameras[thisComputer].z))) {
-                    canvas.render(Text(location:Point(x:20, y:100), text:"Current block: \(currentBlock.type)", fillMode:.fill))
-                }
-                canvas.render(Text(location:Point(x:20, y:110), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:120), text:"Frame: \(BackgroundLayer.frame), Sun Angle: \(Int(sunAngle)%360)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:90), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:100), text:"Frame: \(BackgroundLayer.frame), Sun Angle: \(Int(sunAngle)%360)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
                 
                 //show selected block
@@ -492,17 +489,17 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 placeBlock = nil
                 
                 while !blockSelected && blocksForward <= 4.5 {
-                    if let block = BackgroundLayer.background.getBlock(at:BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z))) {
-                        if block.type != "air" {
-                            BackgroundLayer.background.setBlock(at:BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z)), to:"selected")
-                            selectedBlock = BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z))
-                            
-                            ray.forward(steps:-1/16)
+                    let block = world.getBlock(at:BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z)))
+                    if block.type != "air" {
+                        world.setBlock(at:BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z)), to:"selected")
+                        selectedBlock = BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z))
+                        
+                        ray.forward(steps:-1/16)
 
-                            placeBlock = BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z))
-                            
-                            blockSelected = true
-                        }
+                        placeBlock = BlockPoint3d(x:Int(ray.x), y:Int(ray.y), z:Int(ray.z))
+                        
+                        blockSelected = true
+                        
                     }
 
                     ray.forward(steps:1/16)
@@ -512,10 +509,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 //process mining
                 if mining {
                     if let blockToBreak = selectedBlock {
-                        if let block = BackgroundLayer.background.getBlock(at:blockToBreak) {
-                            let multiplier = BackgroundLayer.inventory.miningMultiplier(block:block.type).multiplier
-                            BackgroundLayer.background.setBlock(at:blockToBreak, to:"m\(multiplier)")
-                        }
+                        let block = world.getBlock(at:blockToBreak)
+                        let multiplier = BackgroundLayer.inventory.miningMultiplier(block:block.type).multiplier
+                        world.setBlock(at:blockToBreak, to:"m\(multiplier)")
                     }
                 }
                 
