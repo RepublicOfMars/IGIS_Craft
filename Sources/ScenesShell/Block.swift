@@ -11,7 +11,8 @@ class Block {
     var breakValue = 0
     var breaking = false
     var hardness : Int
-
+    var isVisible = true
+    
     func updateBlock() {
         switch type{
         case "bedrock":
@@ -89,12 +90,8 @@ class Block {
         updateBlock()
     }
 
-    func isVisible() -> Bool {
-        return true
-    }
-
     func renderBlock(camera:Camera, canvas:Canvas) {
-        if type != "air" && self.isVisible() {
+        if type != "air" {
             var sunAngle = (Double(BackgroundLayer.frame)/1440)*180
 
             while sunAngle > 360 {
