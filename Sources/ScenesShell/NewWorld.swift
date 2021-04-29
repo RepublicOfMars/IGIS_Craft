@@ -1,26 +1,6 @@
 import Igis
 import Scenes
 
-class generatingMap {
-    var map : [[Int]]
-    let size : (x:Int, z:Int)
-    
-    init(x:Int, z:Int) {
-        size = (x:x, z:z)
-        map = []
-        for x in 0 ..< size.x {
-            map.append([])
-            for _ in 0 ..< size.z {
-                map[x].append(0)
-            }
-        }
-    }
-
-    func changePixel(x:Int, z:Int, to:Int) {
-        map[x][z] = to
-    }
-}
-
 class SimpleWorld {
     var Blocks : [[[Block]]]
     let worldSize : (horizontal:Int, vertical:Int)
@@ -36,6 +16,7 @@ class SimpleWorld {
     var frame = 0
     let splashTxt = splashText()
     var renderDistance = 3
+    let loadingMap : Map
     
     init(seed:Int=0) {
         Blocks = []
@@ -49,30 +30,32 @@ class SimpleWorld {
             }
         }
 
+        loadingMap = Map(xSize:worldSize.horizontal/8, ySize:worldSize.horizontal/8, pixelSize:16)
+
         blocksToGenerate = worldSize.horizontal * worldSize.horizontal * worldSize.vertical
     }
 
-    private func inBounds(_ point:BlockPoint3d) -> BlockPoint3d {
+    private func inBounds(_ point:BlockPoint3d) -> Bool {
         let fixedPoint = point
         if fixedPoint.x >= worldSize.horizontal {
-            fixedPoint.x = worldSize.horizontal - 1
+            return false
         }
         if fixedPoint.x < 0 {
-            fixedPoint.x = 0
+            return false
         }
         if fixedPoint.y >= worldSize.vertical {
-            fixedPoint.y = worldSize.vertical - 1
+            return false
         }
         if fixedPoint.y < 0 {
-            fixedPoint.y = 0
+            return false
         }
         if fixedPoint.z >= worldSize.horizontal {
-            fixedPoint.z = worldSize.horizontal - 1
+            return false
         }
         if fixedPoint.z < 0 {
-            fixedPoint.z = 0
+            return false
         }
-        return fixedPoint
+        return true
     }
 
     private func horizontalInBounds(_ n:Int) -> Int {
@@ -99,32 +82,35 @@ class SimpleWorld {
 
     private func generate(x:Int, z:Int) {
         let terrainHeight = 32 + Int(8.0*(Noise(x:x, z:z, seed:seed)))
+        if x % 8 == 0 && z % 8 == 0 {
+            loadingMap.changePixel(x:x/8, y:z/8, to:Color(red:UInt8(terrainHeight)*4, green:UInt8(terrainHeight)*4, blue:UInt8(terrainHeight)*4))
+        }
         
         for y in 0 ..< worldSize.vertical {
             var type = "air"
-                    if y <= terrainHeight-3 {
-                        type = "stone"
-                        if y <= 8 && Int.random(in:1...128) == 1 {
-                            type = "diamond_ore"
-                        }
-                        if y <= 16 && Int.random(in:1...64) == 1 {
-                            type = "iron_ore"
-                        }
-                        if y <= 24 && Int.random(in:1...32) == 1 {
-                            type = "coal_ore"
-                        }
-                    } else if y <= terrainHeight-1 {
-                        type = "dirt"
-                    } else if y <= terrainHeight {
-                        type = "grass"
-                    }
-                    
-                    if y <= 0 {
-                        type = "bedrock"
-                    }
-                    
-                    Blocks[y][x].append(Block(location:BlockPoint3d(x:x, y:y, z:z), type:type))
-                    blocksGenerated += 1
+            if y <= terrainHeight-3 {
+                type = "stone"
+                if y <= 8 && Int.random(in:1...128) == 1 {
+                    type = "diamond_ore"
+                }
+                if y <= 16 && Int.random(in:1...64) == 1 {
+                    type = "iron_ore"
+                }
+                if y <= 24 && Int.random(in:1...32) == 1 {
+                    type = "coal_ore"
+                }
+            } else if y <= terrainHeight-1 {
+                type = "dirt"
+            } else if y <= terrainHeight {
+                type = "grass"
+            }
+            
+            if y <= 0 {
+                type = "bedrock"
+            }
+            
+            Blocks[y][x].append(Block(location:BlockPoint3d(x:x, y:y, z:z), type:type))
+            blocksGenerated += 1
         }
     }
 
@@ -144,10 +130,10 @@ class SimpleWorld {
             }
         }
 
-        if output.count > 256 && renderDistance > 2 {
+        if output.count > 448 && renderDistance > 2 {
             renderDistance -= 1
         }
-        if output.count < 128 && renderDistance < 12 {
+        if output.count < 320 && renderDistance < 12 {
             renderDistance += 1
         }
         
@@ -155,12 +141,10 @@ class SimpleWorld {
     }
     
     public func getBlock(at:BlockPoint3d) -> Block {
-        print("getBlock(at:BlockPoint3d(x:\(verticalInBounds(at.x)), y:\(verticalInBounds(at.y)), z:\(verticalInBounds(at.z))))")
         return Blocks[verticalInBounds(at.y)][horizontalInBounds(at.x)][horizontalInBounds(at.z)]
     }
     
     public func setBlock(at:BlockPoint3d, to:String) {
-        print("setBlock(at:BlockPoint3d(x:\(verticalInBounds(at.x)), y:\(verticalInBounds(at.y)), z:\(verticalInBounds(at.z))), to:\(to))")
         if to == "selected" {
             Blocks[verticalInBounds(at.y)][horizontalInBounds(at.x)][horizontalInBounds(at.z)].selected = true
         } else if to == "visible" {
@@ -175,7 +159,9 @@ class SimpleWorld {
             Blocks[verticalInBounds(at.y)][horizontalInBounds(at.x)][horizontalInBounds(at.z)].type = to
         }
         Blocks[verticalInBounds(at.y)][horizontalInBounds(at.x)][horizontalInBounds(at.z)].updateBlock()
-        updateNeighborVisibility(at:at)
+        if to != "visible" && to != "invisible" {
+            updateNeighborVisibility(at:at)
+        }
     }
     
     private func createTree(at:BlockPoint3d) {
@@ -203,7 +189,6 @@ class SimpleWorld {
     }
 
     public func updateBlockVisibility(at:BlockPoint3d) {
-        print("updateBlockVisibility(at:BlockPoint3d(x:\(at.x), y:\(at.y), z:\(at.z)))")
         var visible = false
         if getBlock(at:BlockPoint3d(x:at.x+1, y:at.y, z:at.z)).type == "air" {visible = true}
         if getBlock(at:BlockPoint3d(x:at.x-1, y:at.y, z:at.z)).type == "air" {visible = true}
@@ -236,8 +221,6 @@ class SimpleWorld {
             if !terrainGenerated {
                 for _ in 0 ..< blocksPerFrame {
                     generate(x:blockGenerating.x, z:blockGenerating.z)
-
-                    print("\(blockGenerating.x), \(blockGenerating.z)")
                     
                     blockGenerating.z += 1
                     if blockGenerating.z >= worldSize.horizontal {
@@ -246,21 +229,22 @@ class SimpleWorld {
                     }
                     if blockGenerating.x >= worldSize.horizontal {
                         for _ in 0 ..< 128 {
-                            //let treeLocation = (x:Int.random(in:0..<worldSize.horizontal), z:Int.random(in:0..<worldSize.horizontal))
-                            //createTree(at:BlockPoint3d(x:treeLocation.x, y:32 + Int(8.0*(Noise(x:treeLocation.x, z:treeLocation.z, seed:seed))), z:treeLocation.z))
+                            let treeLocation = (x:Int.random(in:0..<worldSize.horizontal), z:Int.random(in:0..<worldSize.horizontal))
+                            createTree(at:BlockPoint3d(x:treeLocation.x, y:33 + Int(8.0*(Noise(x:treeLocation.x, z:treeLocation.z, seed:seed))), z:treeLocation.z))
                         }
                         terrainGenerated = true
                     }
                 }
             } else {
                 for _ in 0 ..< blocksPerFrame {
-                    print("    scanning blocks at \(blockScanning.x), \(blockScanning.z)")
                     for scanY in 0 ..< worldSize.vertical {
-                        print("    scanning block at \(blockScanning.x), \(scanY), \(blockScanning.z)")
+                        if blockScanning.x % 8 == 0 && blockScanning.z % 8 == 0 {
+                            loadingMap.changePixel(x:blockScanning.x/8, y:blockScanning.z/8, to:Color(red:0, green:loadingMap.getPixel(x:blockScanning.x/8, y:blockScanning.z/8).green, blue:0))
+                        }
                         updateBlockVisibility(at:BlockPoint3d(x:blockScanning.x, y:scanY, z:blockScanning.z))
+                        blocksGenerated += 1
                     }
                     
-                    blocksGenerated += 1
                     blockScanning.z += 1
                     if blockScanning.z >= worldSize.horizontal {
                         blockScanning.z = 0
@@ -309,6 +293,8 @@ class SimpleWorld {
             version.alignment = .left
             canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
             canvas.render(version)
+
+            loadingMap.render(canvas:canvas)
         } else {
             for block in nearbyBlocks(cameraPosition:Point3d(x:camera.x, y:camera.y, z:camera.z)) {
                 block.renderBlock(camera:camera, canvas:canvas)

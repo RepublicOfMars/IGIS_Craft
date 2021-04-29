@@ -18,10 +18,11 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
     static let seed = Int.random(in:0...256)
     
     let background = Background()
-    static var cameras : [Camera] = []
+    var camera : Camera = Camera()
     static var computerCount = 0
     var thisComputer = 0
     var computerIsActive = false
+    var playerSpawned = false
     static let chat = Chat()
 
     var initString = ""
@@ -55,7 +56,6 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
         
         BackgroundLayer.computerCount += 1
         thisComputer = BackgroundLayer.computerCount - 1
-
         world = SimpleWorld(seed:BackgroundLayer.seed)
         
         // Using a meaningful name can be helpful for debugging
@@ -65,16 +65,22 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
         insert(entity:background, at:.back)
     }
 
-    func initializeComputer() {
-        BackgroundLayer.cameras.append(Camera())
-        computerIsActive = true
-
+    func spawnPlayer() {
         let spawnLocation = (x:Int.random(in:0..<world.worldSize.horizontal),
                              z:Int.random(in:0..<world.worldSize.horizontal))
+        var spawnY = world.worldSize.vertical-1
+        var spawnLocationFound = false
 
-        let spawnHeight = 32 + Int(8.0*(+Noise(x:spawnLocation.x, z:spawnLocation.z, seed:BackgroundLayer.seed)))
+        while !spawnLocationFound {
+            if world.getBlock(at:BlockPoint3d(x:spawnLocation.x, y:spawnY, z:spawnLocation.z)).type != "air" {
+                spawnY += 3
+                spawnLocationFound = true
+            } else {
+                spawnY -= 1
+            }
+        }
         
-        BackgroundLayer.cameras[thisComputer].move(x:Double(spawnLocation.x)+0.5, y:Double(spawnHeight)+3.0, z:Double(spawnLocation.z)+0.5)
+        camera.move(x:Double(spawnLocation.x), y:Double(64/*spawnY*/), z:Double(spawnLocation.z))
     }
     
     override func preSetup(canvasSize:Size, canvas:Canvas) {
@@ -87,18 +93,18 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
     override func preCalculate(canvas:Canvas) {
         if computerIsActive && !world.generating {
             
-            if cameraIsRotating.up{BackgroundLayer.cameras[thisComputer].cameraRotateUp()}
-            if cameraIsRotating.down{BackgroundLayer.cameras[thisComputer].cameraRotateDown()}
-            if cameraIsRotating.left{BackgroundLayer.cameras[thisComputer].cameraRotateLeft()}
-            if cameraIsRotating.right{BackgroundLayer.cameras[thisComputer].cameraRotateRight()}
+            if cameraIsRotating.up{camera.cameraRotateUp()}
+            if cameraIsRotating.down{camera.cameraRotateDown()}
+            if cameraIsRotating.left{camera.cameraRotateLeft()}
+            if cameraIsRotating.right{camera.cameraRotateRight()}
             
             cameraVelocity.up -= 0.25 //gravity
             //Vertical collision
 
             let verticalRay = Turtle3d()
-            verticalRay.x = BackgroundLayer.cameras[thisComputer].x
-            verticalRay.y = BackgroundLayer.cameras[thisComputer].y
-            verticalRay.z = BackgroundLayer.cameras[thisComputer].z
+            verticalRay.x = camera.x
+            verticalRay.y = camera.y
+            verticalRay.z = camera.z
             if cameraVelocity.up > 0 {
                 verticalRay.pitch = 90.0
                 verticalRay.y += 0.5
@@ -127,12 +133,12 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 } else {
                     verticalRay.y += 1.5
                 }
-                BackgroundLayer.cameras[thisComputer].x = verticalRay.x
-                BackgroundLayer.cameras[thisComputer].y = verticalRay.y
-                BackgroundLayer.cameras[thisComputer].z = verticalRay.z
+                camera.x = verticalRay.x
+                camera.y = verticalRay.y
+                camera.z = verticalRay.z
                 cameraVelocity.up = 0.0
             } else {
-                BackgroundLayer.cameras[thisComputer].cameraUp(cameraVelocity.up)
+                camera.cameraUp(cameraVelocity.up)
             }
 
             if verticalRayDistance == 0 {
@@ -144,10 +150,10 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             //forward/backward collision
             
             let forwardRay = Turtle3d()
-            forwardRay.x = BackgroundLayer.cameras[thisComputer].x
-            forwardRay.y = BackgroundLayer.cameras[thisComputer].y
-            forwardRay.z = BackgroundLayer.cameras[thisComputer].z
-            forwardRay.yaw = BackgroundLayer.cameras[thisComputer].yaw
+            forwardRay.x = camera.x
+            forwardRay.y = camera.y
+            forwardRay.z = camera.z
+            forwardRay.yaw = camera.yaw
             var forwardRayDistance = 0.0
             var forwardCollision = false
             
@@ -176,20 +182,20 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 } else {
                     forwardRay.forward(steps:0.5)
                 }
-                BackgroundLayer.cameras[thisComputer].x = forwardRay.x
-                BackgroundLayer.cameras[thisComputer].y = forwardRay.y
-                BackgroundLayer.cameras[thisComputer].z = forwardRay.z
+                camera.x = forwardRay.x
+                camera.y = forwardRay.y
+                camera.z = forwardRay.z
             } else {
-                BackgroundLayer.cameras[thisComputer].cameraForward(cameraVelocity.forward)   
+                camera.cameraForward(cameraVelocity.forward)   
             }
             
             //Left/Right collision
             
             let leftRay = Turtle3d()
-            leftRay.x = BackgroundLayer.cameras[thisComputer].x
-            leftRay.y = BackgroundLayer.cameras[thisComputer].y
-            leftRay.z = BackgroundLayer.cameras[thisComputer].z
-            leftRay.yaw = BackgroundLayer.cameras[thisComputer].yaw - 90
+            leftRay.x = camera.x
+            leftRay.y = camera.y
+            leftRay.z = camera.z
+            leftRay.yaw = camera.yaw - 90
             leftRay.correctRotation()
             var leftRayDistance = 0.0
             var leftCollision = false
@@ -221,11 +227,11 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 } else {
                     leftRay.forward(steps:0.5)
                 }
-                BackgroundLayer.cameras[thisComputer].x = leftRay.x
-                BackgroundLayer.cameras[thisComputer].y = leftRay.y
-                BackgroundLayer.cameras[thisComputer].z = leftRay.z
+                camera.x = leftRay.x
+                camera.y = leftRay.y
+                camera.z = leftRay.z
             } else {
-                BackgroundLayer.cameras[thisComputer].cameraLeft(cameraVelocity.left)   
+                camera.cameraLeft(cameraVelocity.left)   
             }
         }
     }
@@ -304,9 +310,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                     case "/tp":
                         if arguments.count == 4 {
                             if let x = Double(arguments[1]), let y = Double(arguments[2]), let z = Double(arguments[3]) {
-                                BackgroundLayer.cameras[thisComputer].x = x
-                                BackgroundLayer.cameras[thisComputer].y = y
-                                BackgroundLayer.cameras[thisComputer].z = z
+                                camera.x = x
+                                camera.y = y
+                                camera.z = z
                                 
                                 BackgroundLayer.chat.input("Teleported to \(Int(x)), \(Int(y)), \(Int(z))")
                             }
@@ -409,9 +415,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             //render the sun
             let sunPath = Path3d()
             let sunTurtle = Turtle3d()
-            sunTurtle.x = BackgroundLayer.cameras[thisComputer].x
-            sunTurtle.y = BackgroundLayer.cameras[thisComputer].y
-            sunTurtle.z = BackgroundLayer.cameras[thisComputer].z
+            sunTurtle.x = camera.x
+            sunTurtle.y = camera.y
+            sunTurtle.z = camera.z
             sunTurtle.rotate(yaw:90)
             sunTurtle.rotate(pitch:sunAngle)
 
@@ -425,7 +431,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             sunPath.lineTo(Point3d(x:sunTurtle.x, y:sunTurtle.y, z:sunTurtle.z-1))
             sunPath.lineTo(Point3d(x:sunTurtle.x, y:sunTurtle.y, z:sunTurtle.z+1))
 
-            sunPath.renderPath(camera:BackgroundLayer.cameras[thisComputer],
+            sunPath.renderPath(camera:camera,
                                canvas:canvas,
                                color:Color(red:UInt8(255*timeOfDayMultiplier), green:UInt8(255*timeOfDayMultiplier), blue:UInt8(196*timeOfDayMultiplier)),
                                solid:true,
@@ -433,9 +439,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             //render the moon
             let moonPath = Path3d()
             let moonTurtle = Turtle3d()
-            moonTurtle.x = BackgroundLayer.cameras[thisComputer].x
-            moonTurtle.y = BackgroundLayer.cameras[thisComputer].y
-            moonTurtle.z = BackgroundLayer.cameras[thisComputer].z
+            moonTurtle.x = camera.x
+            moonTurtle.y = camera.y
+            moonTurtle.z = camera.z
             moonTurtle.rotate(yaw:90)
             moonTurtle.rotate(pitch:sunAngle+180)
 
@@ -449,26 +455,32 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             moonPath.lineTo(Point3d(x:moonTurtle.x, y:moonTurtle.y, z:moonTurtle.z-1))
             moonPath.lineTo(Point3d(x:moonTurtle.x, y:moonTurtle.y, z:moonTurtle.z+1))
             
-            moonPath.renderPath(camera:BackgroundLayer.cameras[thisComputer],
+            moonPath.renderPath(camera:camera,
                                canvas:canvas,
                                color:Color(red:UInt8(128), green:UInt8(128), blue:UInt8(128+68*(timeOfDayMultiplier))),
                                solid:true,
                                outline:false)
             
-            world.render(camera:BackgroundLayer.cameras[thisComputer], canvas:canvas)
+            world.render(camera:camera, canvas:canvas)
 
             if !world.generating {
-                
+                if !playerSpawned {
+                    camera.x = 0
+                    camera.y = 0
+                    camera.z = 0
+                    spawnPlayer()
+                    playerSpawned = true
+                }
                 canvas.render(FillStyle(color:Color(red:UInt8(192*(1-timeOfDayMultiplier)), green:UInt8(192*(1-timeOfDayMultiplier)), blue:UInt8(192*(1-timeOfDayMultiplier)))))
                 let cameraPosText = Text(location:Point(x:20, y:20), text:"Camera Position:", fillMode:.fill)
                 cameraPosText.alignment = .left
                 cameraPosText.font = "8pt Arial"
                 canvas.render(cameraPosText)
-                canvas.render(Text(location:Point(x:20, y:30), text:"X: \(Int(BackgroundLayer.cameras[thisComputer].x))", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:40), text:"Y: \(Int(BackgroundLayer.cameras[thisComputer].y))", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:50), text:"Z: \(Int(BackgroundLayer.cameras[thisComputer].z))", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(BackgroundLayer.cameras[thisComputer].pitch)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(BackgroundLayer.cameras[thisComputer].yaw)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:30), text:"X: \(Int(camera.x))", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:40), text:"Y: \(Int(camera.y))", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:50), text:"Z: \(Int(camera.z))", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(camera.pitch)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(camera.yaw)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: 8", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:90), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:100), text:"Frame: \(BackgroundLayer.frame), Sun Angle: \(Int(sunAngle)%360)", fillMode:.fill))
@@ -479,11 +491,11 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 var blocksForward = 0.0
                 let ray = Turtle3d()
                 
-                ray.x = BackgroundLayer.cameras[thisComputer].x
-                ray.y = BackgroundLayer.cameras[thisComputer].y
-                ray.z = BackgroundLayer.cameras[thisComputer].z
-                ray.pitch = BackgroundLayer.cameras[thisComputer].pitch
-                ray.yaw = BackgroundLayer.cameras[thisComputer].yaw
+                ray.x = camera.x
+                ray.y = camera.y
+                ray.z = camera.z
+                ray.pitch = camera.pitch
+                ray.yaw = camera.yaw
                 
                 selectedBlock = nil
                 placeBlock = nil
@@ -535,7 +547,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
         } else {
             clearCanvas(canvas:canvas)
             if firstComputer {
-                initializeComputer()
+                computerIsActive = true
             } else {
                 renderNoise(canvas:canvas, quality:16, multiplier:128, frame:BackgroundLayer.frame, baseColor:Color(red:128, green:128, blue:128))
                 canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
