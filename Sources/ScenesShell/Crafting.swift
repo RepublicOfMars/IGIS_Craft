@@ -46,6 +46,9 @@ class CraftingRecipe {
             if !success {
                 return false
             } else {
+                for item in itemsIn {
+                    let _ = inventory.removeItem(item.name, count:item.count)
+                }
                 let toolArguments = itemOut.name.split(separator:"_")
                 let toolMaterial = toolArguments[0]
                 let toolType = toolArguments[1]

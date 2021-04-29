@@ -50,7 +50,7 @@ class Block {
             hardness = 0
         }
         if type == "grass" || type == "stone" || type == "dirt" {
-            let variation = Int(32*DoubleNoise(x:Double(location.x)+0.1, y:Double(location.y)+0.1, z:Double(location.z)+0.1))
+            let variation = Int(16*DoubleNoise(x:Double(location.x)+0.1, y:Double(location.y)+0.1, z:Double(location.z)+0.1))
             color = Color(red:UInt8(Int(color.red)+variation),
                           green:UInt8(Int(color.green)+variation),
                           blue:UInt8(Int(color.blue)+variation))

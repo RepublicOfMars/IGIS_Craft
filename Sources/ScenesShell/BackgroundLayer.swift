@@ -80,7 +80,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             }
         }
         
-        camera.move(x:Double(spawnLocation.x), y:Double(64/*spawnY*/), z:Double(spawnLocation.z))
+        camera.move(x:Double(spawnLocation.x), y:Double(spawnY), z:Double(spawnLocation.z))
     }
     
     override func preSetup(canvasSize:Size, canvas:Canvas) {
@@ -483,7 +483,14 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(camera.yaw)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: 8", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:90), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:100), text:"Frame: \(BackgroundLayer.frame), Sun Angle: \(Int(sunAngle)%360)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:100), text:"Render Distance: \(world.renderDistance)", fillMode:.fill))
+                let seconds = BackgroundLayer.frame/8
+                let minutes = seconds/60
+                var secondsString = "\(seconds%60)"
+                if secondsString.count < 2 {
+                    secondsString = "0\(secondsString)"
+                }
+                canvas.render(Text(location:Point(x:20, y:110), text:"Frame: \(BackgroundLayer.frame), Run Time: \(minutes):\(secondsString)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
                 
                 //show selected block
