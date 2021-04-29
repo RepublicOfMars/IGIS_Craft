@@ -4,12 +4,13 @@ public func splashText() -> String {
                 "Now with Physics!",
                 "Now with Trees!",
                 "Mr.Ben is cool!",
-                "2200+ lines of code!",
+                "2300+ lines of code!",
                 "Swift Edition!",
                 "100% guaranteed, almost bug free!",
                 "Singleplayer!",
                 "No more walking through walls!",
-                "The IGIS servers are on fire right now!"]
+                "The IGIS servers are on fire right now!",
+                "Now with better Render Distance!"]
 
     return text[Int.random(in:0..<text.count)]
 }

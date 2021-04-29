@@ -259,6 +259,8 @@ class SimpleWorld {
 
             //render loading screen
             renderNoise(canvas:canvas, quality:64, multiplier:64, frame:frame)
+            loadingMap.render(canvas:canvas)
+            
             let text = Text(location:Point(x:canvas.canvasSize!.width/2, y:3*(canvas.canvasSize!.height/4)), text:"Generating World: \((50*blocksGenerated)/blocksToGenerate)%")
             text.font = "\(canvas.canvasSize!.height/64)pt Arial"
             text.baseline = .middle
@@ -287,14 +289,13 @@ class SimpleWorld {
             canvas.render(FillStyle(color:Color(red:255, green:255, blue:0)))
             canvas.render(splash)
 
-            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.3.1")
+            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.3.2")
             version.font = "\((canvas.canvasSize!.height/64))pt Arial"
             version.baseline = .bottom
             version.alignment = .left
             canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
             canvas.render(version)
 
-            loadingMap.render(canvas:canvas)
         } else {
             for block in nearbyBlocks(cameraPosition:Point3d(x:camera.x, y:camera.y, z:camera.z)) {
                 block.renderBlock(camera:camera, canvas:canvas)
