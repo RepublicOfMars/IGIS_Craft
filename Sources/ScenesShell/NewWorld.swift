@@ -117,6 +117,7 @@ class SimpleWorld {
     private func nearbyBlocks(cameraPosition:Point3d) -> [Block] {
         var output : [Block] = []
         var workingArray : [Double] = []
+        var sidesRendered = 0
         
         for y in verticalInBounds(Int(cameraPosition.y)-renderDistance) ... verticalInBounds(Int(cameraPosition.y)+renderDistance) {
             for x in horizontalInBounds(Int(cameraPosition.x)-renderDistance) ... horizontalInBounds(Int(cameraPosition.x)+renderDistance) {
@@ -125,15 +126,16 @@ class SimpleWorld {
                     if block.isVisible && block.type != "air" {
                         output.append(block)
                         workingArray.append(block.location.convertToDouble().distanceFrom(point:cameraPosition))
+                        sidesRendered += block.sidesToRender.count
                     }
                 }
             }
         }
 
-        if output.count > 448 && renderDistance > 2 {
+        if sidesRendered > 1800 && renderDistance > 2 {
             renderDistance -= 1
         }
-        if output.count < 320 && renderDistance < 12 {
+        if sidesRendered < 1500 && renderDistance < 32 {
             renderDistance += 1
         }
         
@@ -163,6 +165,10 @@ class SimpleWorld {
             updateNeighborVisibility(at:at)
         }
     }
+
+    private func updateBlockSidesToRender(at:BlockPoint3d, to:[String]) {
+        Blocks[verticalInBounds(at.y)][horizontalInBounds(at.x)][horizontalInBounds(at.z)].sidesToRender = to
+    }    
     
     private func createTree(at:BlockPoint3d) {
         let trunkHeight = Int.random(in:3...5)
@@ -190,18 +196,21 @@ class SimpleWorld {
 
     public func updateBlockVisibility(at:BlockPoint3d) {
         var visible = false
-        if getBlock(at:BlockPoint3d(x:at.x+1, y:at.y, z:at.z)).type == "air" {visible = true}
-        if getBlock(at:BlockPoint3d(x:at.x-1, y:at.y, z:at.z)).type == "air" {visible = true}
-        if getBlock(at:BlockPoint3d(x:at.x, y:at.y+1, z:at.z)).type == "air" {visible = true}
-        if getBlock(at:BlockPoint3d(x:at.x, y:at.y-1, z:at.z)).type == "air" {visible = true}
-        if getBlock(at:BlockPoint3d(x:at.x, y:at.y, z:at.z+1)).type == "air" {visible = true}
-        if getBlock(at:BlockPoint3d(x:at.x, y:at.y, z:at.z-1)).type == "air" {visible = true}
+        var sidesToRender : [String] = []
+        if getBlock(at:BlockPoint3d(x:at.x+1, y:at.y, z:at.z)).type == "air" {visible = true; sidesToRender.append("+x")}
+        if getBlock(at:BlockPoint3d(x:at.x-1, y:at.y, z:at.z)).type == "air" {visible = true; sidesToRender.append("-x")}
+        if getBlock(at:BlockPoint3d(x:at.x, y:at.y+1, z:at.z)).type == "air" {visible = true; sidesToRender.append("+y")}
+        if getBlock(at:BlockPoint3d(x:at.x, y:at.y-1, z:at.z)).type == "air" {visible = true; sidesToRender.append("-y")}
+        if getBlock(at:BlockPoint3d(x:at.x, y:at.y, z:at.z+1)).type == "air" {visible = true; sidesToRender.append("+z")}
+        if getBlock(at:BlockPoint3d(x:at.x, y:at.y, z:at.z-1)).type == "air" {visible = true; sidesToRender.append("-z")}
         
         if visible {
-            setBlock(at:BlockPoint3d(x:at.x, y:at.y, z:at.z), to:"visible")
+            setBlock(at:at, to:"visible")
         } else {
-            setBlock(at:BlockPoint3d(x:at.x, y:at.y, z:at.z), to:"invisible")
+            setBlock(at:at, to:"invisible")
         }
+
+        updateBlockSidesToRender(at:at, to:sidesToRender)
     }
 
     public func updateNeighborVisibility(at:BlockPoint3d) {
@@ -289,7 +298,7 @@ class SimpleWorld {
             canvas.render(FillStyle(color:Color(red:255, green:255, blue:0)))
             canvas.render(splash)
 
-            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.3.2")
+            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.3.3")
             version.font = "\((canvas.canvasSize!.height/64))pt Arial"
             version.baseline = .bottom
             version.alignment = .left

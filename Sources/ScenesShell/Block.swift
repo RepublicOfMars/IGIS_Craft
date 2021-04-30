@@ -12,6 +12,8 @@ class Block {
     var breaking = false
     var hardness : Int
     var isVisible = true
+
+    var sidesToRender : [String] = []
     
     func updateBlock() {
         switch type{
@@ -117,7 +119,7 @@ class Block {
                 let blockColor = Color(red:UInt8(Double(color.red) * timeOfDayMultiplier),
                                        green:UInt8(Double(color.green) * timeOfDayMultiplier),
                                        blue:UInt8(Double(color.blue) * timeOfDayMultiplier))
-                Cube(center:location.convertToDouble()).renderCube(camera:camera, canvas:canvas, color:blockColor, outline:selected)
+                Cube(center:location.convertToDouble(), sidesToRender:sidesToRender).renderCube(camera:camera, canvas:canvas, color:blockColor, outline:selected)
             } else {
                 var colorMultiplier = 0.0
 
@@ -128,7 +130,7 @@ class Block {
                 let redBreak = UInt8(Double(color.red) * colorMultiplier * timeOfDayMultiplier)
                 let greenBreak = UInt8(Double(color.green) * colorMultiplier * timeOfDayMultiplier)
                 let blueBreak = UInt8(Double(color.blue) * colorMultiplier * timeOfDayMultiplier)
-                Cube(center:location.convertToDouble()).renderCube(camera:camera, canvas:canvas, color:Color(red:redBreak, green:greenBreak, blue:blueBreak), outline:selected)
+                Cube(center:location.convertToDouble(), sidesToRender:sidesToRender).renderCube(camera:camera, canvas:canvas, color:Color(red:redBreak, green:greenBreak, blue:blueBreak), outline:selected)
                 self.breaking = false
             }
         }

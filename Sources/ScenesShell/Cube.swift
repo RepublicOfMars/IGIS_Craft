@@ -4,21 +4,35 @@ import Scenes
 class Cube {
     var center : Point3d
     var size : Double
+    var sidesToRender : [String] = []
 
-    init(center:Point3d, size:Double=1.0) {
+    init(center:Point3d, size:Double=1.0, sidesToRender:[String]=["+x", "-x", "+y", "-y", "+z", "-z"]) {
         self.center = center
         self.size = size
+        self.sidesToRender = sidesToRender
     }
 
     func getSquares() -> [Square] { //get squares for sides of the cube
         var sides : [Square] = []
 
-        sides.append(Square(center:Point3d(x:center.x+(size/2),y:center.y,z:center.z), axis:"x", size:size))
-        sides.append(Square(center:Point3d(x:center.x-(size/2),y:center.y,z:center.z), axis:"x", size:size))
-        sides.append(Square(center:Point3d(x:center.x,y:center.y+(size/2),z:center.z), axis:"y", size:size))
-        sides.append(Square(center:Point3d(x:center.x,y:center.y-(size/2),z:center.z), axis:"y", size:size))
-        sides.append(Square(center:Point3d(x:center.x,y:center.y,z:center.z+(size/2)), axis:"z", size:size))
-        sides.append(Square(center:Point3d(x:center.x,y:center.y,z:center.z-(size/2)), axis:"z", size:size))
+        if sidesToRender.contains("+x") {
+            sides.append(Square(center:Point3d(x:center.x+(size/2),y:center.y,z:center.z), axis:"x", size:size))
+        }
+        if sidesToRender.contains("-x") {
+            sides.append(Square(center:Point3d(x:center.x-(size/2),y:center.y,z:center.z), axis:"x", size:size))
+        }
+        if sidesToRender.contains("+y") {
+            sides.append(Square(center:Point3d(x:center.x,y:center.y+(size/2),z:center.z), axis:"y", size:size))
+        }
+        if sidesToRender.contains("-y") {
+            sides.append(Square(center:Point3d(x:center.x,y:center.y-(size/2),z:center.z), axis:"y", size:size))
+        }
+        if sidesToRender.contains("+z") {
+            sides.append(Square(center:Point3d(x:center.x,y:center.y,z:center.z+(size/2)), axis:"z", size:size))
+        }
+        if sidesToRender.contains("-z") {
+            sides.append(Square(center:Point3d(x:center.x,y:center.y,z:center.z-(size/2)), axis:"z", size:size))
+        }
 
         return sides
     }
