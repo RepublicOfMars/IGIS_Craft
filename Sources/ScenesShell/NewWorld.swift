@@ -35,6 +35,23 @@ class SimpleWorld {
         blocksToGenerate = worldSize.horizontal * worldSize.horizontal * worldSize.vertical
     }
 
+    public func savingString() -> String {
+        var output = ""
+
+        output.append("h\(worldSize.horizontal)")
+        output.append("-v\(worldSize.vertical)")
+        for y in 0 ..< Blocks.count {
+            for x in 0 ..< Blocks.count {
+                for z in 0 ..< Blocks.count {
+                    output += "-"
+                    output += "\(Blocks[y][x][z].type)"
+                }
+            }
+        }
+
+        return output
+    }
+
     private func inBounds(_ point:BlockPoint3d) -> Bool {
         let fixedPoint = point
         if fixedPoint.x >= worldSize.horizontal {
@@ -298,7 +315,7 @@ class SimpleWorld {
             canvas.render(FillStyle(color:Color(red:255, green:255, blue:0)))
             canvas.render(splash)
 
-            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.3.3")
+            let version = Text(location:Point(x:0, y:(canvas.canvasSize!.height)), text:" v0.3.4")
             version.font = "\((canvas.canvasSize!.height/64))pt Arial"
             version.baseline = .bottom
             version.alignment = .left

@@ -490,7 +490,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 if secondsString.count < 2 {
                     secondsString = "0\(secondsString)"
                 }
-                canvas.render(Text(location:Point(x:20, y:110), text:"Frame: \(BackgroundLayer.frame), Run Time: \(minutes):\(secondsString)", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:110), text:"Run Time: \(minutes):\(secondsString)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:canvas.canvasSize!.height-20), text:">\(command)", fillMode:.fill))
                 
                 //show selected block

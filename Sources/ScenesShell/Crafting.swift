@@ -7,27 +7,27 @@ class CraftingRecipe {
         self.itemOut = itemOut
     }
 
-    func craft(_ inventory:Inventory) -> Bool {
+    func canCraft(_ inventory:Inventory) -> Bool {
         let tempInventory = Inventory()
         tempInventory.setBlocks(inventory.getBlocks())
         tempInventory.setCollectables(inventory.getCollectables())
-        var success = true
+
+        for item in itemsIn {
+            if !tempInventory.removeItem(item.name, count:item.count) {
+                return false
+            }
+        }
+        return true
+    }
+    
+    func craft(_ inventory:Inventory) -> Bool {
         let toolNames = ["wooden_pickaxe", "wooden_axe", "wooden_shovel",
                          "stone_pickaxe", "stone_axe", "stone_shovel",
                          "iron_pickaxe", "iron_axe", "iron_shovel",
                          "diamond_pickaxe", "diamond_axe", "diamond_shovel"]
 
         if !toolNames.contains(itemOut.name) {
-            for item in itemsIn {
-                if !tempInventory.removeItem(item.name, count:item.count) {
-                    success = false
-                }
-            }
-            if !tempInventory.giveItem(itemOut.name, count:itemOut.count) {
-                success = false
-            }
-
-            if !success {
+            if !canCraft(inventory) {
                 return false
             } else {
                 for item in itemsIn {
@@ -37,13 +37,8 @@ class CraftingRecipe {
                 return true
             }
         } else {
-            for item in itemsIn {
-                if !tempInventory.removeItem(item.name, count:item.count) {
-                    success = false
-                }
-            }
 
-            if !success {
+            if !canCraft(inventory) {
                 return false
             } else {
                 for item in itemsIn {

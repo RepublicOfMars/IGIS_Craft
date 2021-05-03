@@ -239,7 +239,11 @@ class Inventory {
             //render main inventory
             var itemNumber = 0
             let itemsPerRow = inventoryPanelSize.width/itemBoxSize
-            for item in blocks + collectables {
+            var items = blocks + collectables
+            let itemsCount : [Double] = items.map() {Double($0.count)}
+
+            items = mergeSort(items, by:itemsCount) as! [(name:String, count:Int)]
+            for item in items {
                 canvas.render(FillStyle(color:Color(red:128, green:128, blue:128)))
                 canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
                 canvas.render(Rectangle(rect:Rect(topLeft:Point(x:startingPoint.x+itemBoxSize*(itemNumber%itemsPerRow),
@@ -282,8 +286,9 @@ class Inventory {
             var recipeNumber = 0
             
             for recipe in recipes {
-                canvas.render(FillStyle(color:Color(red:128, green:128, blue:128)))
+                
                 canvas.render(StrokeStyle(color:Color(red:0, green:0, blue:0)))
+                
                 var topLeft = Point(x:craftingStartingPoint.x, y:craftingStartingPoint.y+(craftingRecipePanelSize.height*(recipeNumber/2)))
                 if recipeNumber % 2 != 0 {
                     topLeft = Point(x:craftingStartingPoint.x+(craftingRecipePanelSize.width), y:craftingStartingPoint.y+(craftingRecipePanelSize.height*(recipeNumber/2)))
@@ -296,9 +301,18 @@ class Inventory {
                         } else {
                             canvas.render(FillStyle(color:Color(red:255, green:0, blue:0)))
                         }
-                        mouseClicked = false
                     } else {
-                        canvas.render(FillStyle(color:Color(red:192, green:192, blue:192)))
+                        if recipe.canCraft(self) {
+                            canvas.render(FillStyle(color:Color(red:160, green:160, blue:160)))
+                        } else {
+                            canvas.render(FillStyle(color:Color(red:96, green:96, blue:96)))
+                        }
+                    }
+                } else {
+                    if recipe.canCraft(self) {
+                        canvas.render(FillStyle(color:Color(red:128, green:128, blue:128)))
+                    } else {
+                        canvas.render(FillStyle(color:Color(red:64, green:64, blue:64)))
                     }
                 }
                 canvas.render(Rectangle(rect:panelRect, fillMode:.fillAndStroke))
@@ -326,6 +340,7 @@ class Inventory {
                 canvas.render(itemOutText)
                 recipeNumber += 1
             }
+            mouseClicked = false
         }
     }
 
