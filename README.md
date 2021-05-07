@@ -10,6 +10,7 @@ A recreation of the video game Minecraft using Igis and Scenes.
 * Space - Jump
 * ZC - Scroll hotbar left/right
 * E - Open inventory screen
+* Escape - Open settings panel
 
 ## Links
 * Igis:
