@@ -48,6 +48,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
     static var frame = 0
 
     static let inventory = Inventory()
+    static let settings = Settings()
     
     init() {
         if !BackgroundLayer.playerJoined {
@@ -225,7 +226,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             
             //Left/Right collision
             
-            let leftRay = Turtle3d()
+v            let leftRay = Turtle3d()
             leftRay.x = camera.x
             leftRay.y = camera.y
             leftRay.z = camera.z
@@ -280,7 +281,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
     func onKeyDown(key:String, code:String, ctrlKey:Bool, shiftKey:Bool, altKey:Bool, metaKey:Bool) {
         if computerIsActive {
             if !typing {
-                if !BackgroundLayer.inventory.isOpen() {
+                if !BackgroundLayer.inventory.isOpen() && !BackgroundLayer.settings.isOpen() {
                     switch code {
                     case "KeyI": //Rotation
                         cameraIsRotating.up = true
@@ -321,12 +322,15 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                         command.append("/")
                     case "KeyE": //open inventory
                         BackgroundLayer.inventory.toggle()
+                    case "Escape": //open settings
+                        BackgroundLayer.settings.openSettings()
                     default:
                         Void()
                     }
                 } else {
                     if code == "KeyE" || code == "Escape" {
-                        BackgroundLayer.inventory.toggle()
+                        BackgroundLayer.inventory.closeInventory()
+                        BackgroundLayer.settings.closeSettings()
                     }
                 }
             } else {
@@ -396,11 +400,14 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
 
     func onMouseMove(globalLocation:Point, movement:Point) {
         BackgroundLayer.inventory.hoverOver(point:globalLocation)
+        BackgroundLayer.settings.hoverOver(point:globalLocation)
     }
 
     func onMouseDown(globalLocation:Point) {
         BackgroundLayer.inventory.hoverOver(point:globalLocation)
         BackgroundLayer.inventory.click()
+        BackgroundLayer.settings.hoverOver(point:globalLocation)
+        BackgroundLayer.settings.click()
     }
 
     func clearCanvas(canvas:Canvas) {
@@ -498,6 +505,11 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             world.render(camera:camera, canvas:canvas)
 
             if !world.generating {
+                if BackgroundLayer.inventory.isOpen() || BackgroundLayer.settings.isOpen() {
+                    canvas.render(CursorStyle(style:CursorStyle.Style(rawValue:"initial")!))
+                } else {
+                    canvas.render(CursorStyle(style:CursorStyle.Style(rawValue:"none")!))
+                }
                 if !playerSpawned {
                     camera.x = 0
                     camera.y = 0
@@ -583,6 +595,9 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
 
                 //render inventory
                 BackgroundLayer.inventory.renderInventory(canvas:canvas)
+                BackgroundLayer.settings.render(canvas:canvas)
+            } else {
+                canvas.render(CursorStyle(style:CursorStyle.Style(rawValue:"wait")!))
             }
             BackgroundLayer.chat.render(canvas:canvas)
         } else {

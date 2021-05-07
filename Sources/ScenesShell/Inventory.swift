@@ -155,6 +155,10 @@ class Inventory {
         open = !open
     }
 
+    public func closeInventory() {
+        open = false
+    }
+
     public func isOpen() -> Bool {
         return open
     }
