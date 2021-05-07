@@ -31,6 +31,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
     var command = ""
     
     var cameraIsRotating = (up:false, down:false, left:false, right:false)
+    var cameraIsMoving = (forward:false, left:false, backward:false, right:false)
     var cameraVelocity = (forward:0.0, left:0.0, up:0.0)
     var cameraIsFlying = true
     var onGround = false
@@ -99,6 +100,39 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             if cameraIsRotating.right{camera.cameraRotateRight()}
             
             cameraVelocity.up -= 0.25 //gravity
+
+            //camera movement
+            if cameraIsMoving.forward && cameraVelocity.forward < 2.0 {
+                cameraVelocity.forward += 0.5
+            }
+            if cameraIsMoving.left && cameraVelocity.left < 2.0 {
+                cameraVelocity.left += 0.5
+            }
+            if cameraIsMoving.backward && cameraVelocity.forward > -2.0 {
+                cameraVelocity.forward -= 0.5
+            }
+            if cameraIsMoving.right && cameraVelocity.left > -2.0 {
+                cameraVelocity.left -= 0.5
+            }
+            
+            if !cameraIsMoving.backward && !cameraIsMoving.forward && cameraVelocity.forward != 0 {
+                if cameraVelocity.forward > 0.5 {
+                    cameraVelocity.forward -= 0.5
+                } else if cameraVelocity.forward < -0.5 {
+                    cameraVelocity.forward += 0.5
+                } else {
+                    cameraVelocity.forward = 0.0
+                }
+            }
+            if !cameraIsMoving.left && !cameraIsMoving.right && cameraVelocity.left != 0 {
+                if cameraVelocity.left > 0.5 {
+                    cameraVelocity.left -= 0.5
+                } else if cameraVelocity.left < -0.5 {
+                    cameraVelocity.left += 0.5
+                } else {
+                    cameraVelocity.left = 0.0
+                }
+            }
             //Vertical collision
 
             let verticalRay = Turtle3d()
@@ -257,13 +291,13 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                     case "KeyL":
                         cameraIsRotating.right = true
                     case "KeyW": //Movement
-                        cameraVelocity.forward = 1
+                        cameraIsMoving.forward = true
                     case "KeyS":
-                        cameraVelocity.forward = -1
+                        cameraIsMoving.backward = true
                     case "KeyA":
-                        cameraVelocity.left = 1
+                        cameraIsMoving.left = true
                     case "KeyD":
-                        cameraVelocity.left = -1
+                        cameraIsMoving.right = true
                     case "KeyU": //Break block
                         mining = true
                     case "KeyO": //Place block
@@ -343,14 +377,14 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                     cameraIsRotating.left = false
                 case "KeyL":
                     cameraIsRotating.right = false
-                case "KeyW":
-                    cameraVelocity.forward = 0
+                case "KeyW": //Movement
+                    cameraIsMoving.forward = false
                 case "KeyS":
-                    cameraVelocity.forward = 0
+                    cameraIsMoving.backward = false
                 case "KeyA":
-                    cameraVelocity.left = 0
+                    cameraIsMoving.left = false
                 case "KeyD":
-                    cameraVelocity.left = 0
+                    cameraIsMoving.right = false
                 case "KeyU":
                     mining = false
                 default:
