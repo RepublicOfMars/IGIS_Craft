@@ -17,6 +17,8 @@ class SimpleWorld {
     let splashTxt = splashText()
     var renderDistance = 3
     let loadingMap : Map
+
+    var maxPolygons = 1800
     
     init(seed:Int=0) {
         Blocks = []
@@ -33,6 +35,10 @@ class SimpleWorld {
         loadingMap = Map(xSize:worldSize.horizontal/8, ySize:worldSize.horizontal/8, pixelSize:16)
 
         blocksToGenerate = worldSize.horizontal * worldSize.horizontal * worldSize.vertical
+    }
+
+    public func updateMaxPolygons(to:Int) {
+        maxPolygons = to
     }
 
     public func savingString() -> String {
@@ -149,10 +155,10 @@ class SimpleWorld {
             }
         }
 
-        if sidesRendered > 1800 && renderDistance > 2 {
+        if sidesRendered > maxPolygons && renderDistance > 2 {
             renderDistance -= 1
         }
-        if sidesRendered < 1500 && renderDistance < 32 {
+        if sidesRendered < (maxPolygons - 300) && renderDistance < 32 {
             renderDistance += 1
         }
         

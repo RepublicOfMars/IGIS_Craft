@@ -5,10 +5,9 @@ import Scenes
 class Settings {
     //settings
     private var maxPolygonsToRender = 1800
-    private var minPolygonsToRender : Int
 
     //setting min/max 
-    private var maxPolygonsToRenderSetting = (min:1000, max:2000)
+    private var maxPolygonsToRenderSetting = (min:900, max:2700)
     
     //other variables
     private var open = false
@@ -17,15 +16,10 @@ class Settings {
     private var mouseClicked = false
 
     public init() {
-        minPolygonsToRender = maxPolygonsToRender - 300
     }
 
     public func getMaxPolygonsToRender() -> Int {
         return maxPolygonsToRender
-    }
-
-    public func getMinPolygonsToRender() -> Int {
-        return minPolygonsToRender
     }
 
     public func hoverOver(point:Point) {
@@ -46,6 +40,16 @@ class Settings {
 
     public func closeSettings() {
         open = false
+    }
+
+    private func contains(rect:Rect, point:Point) -> Bool {
+        if rect.topLeft.x <= point.x &&
+             rect.topLeft.x + rect.size.width >= point.x &&
+             rect.topLeft.y <= point.y &&
+             rect.topLeft.y + rect.size.height >= point.y {
+            return true
+        }
+        return false
     }
 
     public func render(canvas:Canvas) {
@@ -84,12 +88,20 @@ class Settings {
             canvas.render(mainSettingsText)
 
             //maxPolygonsToRender
-            canvas.render(FillStyle(color:Color(red:64, green:64, blue:64)))
             let maxPolygonsSliderBackground = Rectangle(rect:Rect(topLeft:settingsSliderStartingPoint,
                                               size:settingsSliderSize),
                                     fillMode:.fillAndStroke)
+            if contains(rect:maxPolygonsSliderBackground.rect, point:mouseLocation) {
+                canvas.render(FillStyle(color:Color(red:96, green:96, blue:96)))
+                if mouseClicked {
+                    let sliderPercent = Double(mouseLocation.x - settingsSliderStartingPoint.x) / Double(settingsSliderSize.width)
+                    maxPolygonsToRender = Int(Double(maxPolygonsToRenderSetting.max-maxPolygonsToRenderSetting.min)*sliderPercent) + maxPolygonsToRenderSetting.min
+                }
+            } else {
+                canvas.render(FillStyle(color:Color(red:64, green:64, blue:64)))
+            }
             canvas.render(maxPolygonsSliderBackground)
-            canvas.render(FillStyle(color:Color(red:128, green:128, blue:128)))
+            canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
             canvas.render(Rectangle(rect:Rect(topLeft:Point(x:(settingsSliderStartingPoint.x-(settingsSliderSize.width/128))+Int((Double(maxPolygonsToRender-maxPolygonsToRenderSetting.min)/Double(maxPolygonsToRenderSetting.max-maxPolygonsToRenderSetting.min))*Double(settingsSliderSize.width)),
                                                             y:settingsSliderStartingPoint.y),
                                               size:Size(width:settingsSliderSize.width/64,
@@ -99,7 +111,7 @@ class Settings {
             maxPolygonsText.alignment = .center
             maxPolygonsText.baseline = .middle
             maxPolygonsText.font = "\(settingsSliderSize.height/2)pt Arial"
-            canvas.render(FillStyle(color:Color(red:255, green:255, blue:255)))
+            canvas.render(FillStyle(color:Color(red:0, green:0, blue:0)))
             canvas.render(maxPolygonsText)
         }
         

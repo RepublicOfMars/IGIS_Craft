@@ -226,7 +226,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             
             //Left/Right collision
             
-v            let leftRay = Turtle3d()
+            let leftRay = Turtle3d()
             leftRay.x = camera.x
             leftRay.y = camera.y
             leftRay.z = camera.z
@@ -596,6 +596,8 @@ v            let leftRay = Turtle3d()
                 //render inventory
                 BackgroundLayer.inventory.renderInventory(canvas:canvas)
                 BackgroundLayer.settings.render(canvas:canvas)
+
+                world.updateMaxPolygons(to:BackgroundLayer.settings.getMaxPolygonsToRender())
             } else {
                 canvas.render(CursorStyle(style:CursorStyle.Style(rawValue:"wait")!))
             }
