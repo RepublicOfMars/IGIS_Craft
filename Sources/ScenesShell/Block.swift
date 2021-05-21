@@ -19,7 +19,7 @@ class Block {
         switch type{
         case "bedrock":
             color = Color(red:64, green:64, blue:64)
-            hardness = -1
+            hardness = 2048
         case "diamond_ore":
             color = Color(red:196, green:196, blue:255)
             hardness = 64
@@ -51,7 +51,7 @@ class Block {
             color = Color(red:255, green:32, blue:255)
             hardness = 0
         }
-        if type == "grass" || type == "stone" || type == "dirt" {
+        if type == "grass" || type == "stone" || type == "dirt" || type == "leaves" {
             let variation = Int(16*DoubleNoise(x:Double(location.x)+0.1, y:Double(location.y)+0.1, z:Double(location.z)+0.1))
             color = Color(red:UInt8(Int(color.red)+variation),
                           green:UInt8(Int(color.green)+variation),

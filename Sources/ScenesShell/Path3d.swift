@@ -45,17 +45,7 @@ class Path3d {
         if outline {
             canvas.render(StrokeStyle(color:Color(red:64, green:64, blue:64)))
         } else {
-            var colorOutline = (red:color.red, green:color.green, blue:color.blue)
-            if color.red >= 4 {
-                colorOutline.red -= 4
-            }
-            if color.green >= 4 {
-                colorOutline.green -= 4
-            }
-            if color.blue >= 4 {
-                colorOutline.blue -= 4
-            }
-            canvas.render(StrokeStyle(color:Color(red:colorOutline.red, green:colorOutline.green, blue:colorOutline.blue)))
+            canvas.render(StrokeStyle(color:color))
         }
         canvas.render(FillStyle(color:color))
         canvas.render(self.flatten(camera:camera, canvas:canvas, solid:solid, outline:outline))

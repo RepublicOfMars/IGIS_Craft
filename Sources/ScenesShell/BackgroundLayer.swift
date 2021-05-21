@@ -49,6 +49,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
 
     static let inventory = Inventory()
     static let settings = Settings()
+
+    var previousCameraLocation = Point3d(x:0, y:0, z:0)
     
     init() {
         if !BackgroundLayer.playerJoined {
@@ -94,6 +96,8 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
 
     override func preCalculate(canvas:Canvas) {
         if computerIsActive && !world.generating {
+
+            previousCameraLocation = Point3d(x:camera.x, y:camera.y, z:camera.z)
             
             if cameraIsRotating.up{camera.cameraRotateUp()}
             if cameraIsRotating.down{camera.cameraRotateDown()}
@@ -101,18 +105,19 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
             if cameraIsRotating.right{camera.cameraRotateRight()}
             
             cameraVelocity.up -= 0.25 //gravity
-
+            
             //camera movement
-            if cameraIsMoving.forward && cameraVelocity.forward < 2.0 {
+            let speedLimit = 2.0
+            if cameraIsMoving.forward && cameraVelocity.forward < speedLimit {
                 cameraVelocity.forward += 0.5
             }
-            if cameraIsMoving.left && cameraVelocity.left < 2.0 {
+            if cameraIsMoving.left && cameraVelocity.left < speedLimit {
                 cameraVelocity.left += 0.5
             }
-            if cameraIsMoving.backward && cameraVelocity.forward > -2.0 {
+            if cameraIsMoving.backward && cameraVelocity.forward > -speedLimit {
                 cameraVelocity.forward -= 0.5
             }
-            if cameraIsMoving.right && cameraVelocity.left > -2.0 {
+            if cameraIsMoving.right && cameraVelocity.left > -speedLimit {
                 cameraVelocity.left -= 0.5
             }
             
@@ -527,7 +532,7 @@ class BackgroundLayer : Layer, KeyDownHandler, KeyUpHandler, MouseMoveHandler, M
                 canvas.render(Text(location:Point(x:20, y:50), text:"Z: \(Int(camera.z))", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:60), text:"Pitch: \(camera.pitch)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:70), text:"Yaw: \(camera.yaw)", fillMode:.fill))
-                canvas.render(Text(location:Point(x:20, y:80), text:"Framerate: 8", fillMode:.fill))
+                canvas.render(Text(location:Point(x:20, y:80), text:"Speed: \(Double(Int(80.0 * previousCameraLocation.distanceFrom(point:Point3d(x:camera.x, y:camera.y, z:camera.z))))/10)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:90), text:"Computers Connected: \(BackgroundLayer.computerCount)", fillMode:.fill))
                 canvas.render(Text(location:Point(x:20, y:100), text:"Render Distance: \(world.renderDistance)", fillMode:.fill))
                 let seconds = BackgroundLayer.frame/8
