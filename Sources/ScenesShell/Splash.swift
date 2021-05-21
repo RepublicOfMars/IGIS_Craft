@@ -10,7 +10,8 @@ public func splashText() -> String {
                 "Singleplayer!",
                 "No more walking through walls!",
                 "The IGIS servers are on fire right now!",
-                "Now with better Render Distance!"]
+                "Now with better Render Distance!",
+                "Open Source!"]
     
     let quotes = ["\"I'm a doctor, not a world-builder!\" -McCoy, early 2300s",
                   "\"Eat any good books lately?\" -Q, late 2300s",
