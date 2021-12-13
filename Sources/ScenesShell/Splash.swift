@@ -3,7 +3,7 @@ public func splashText() -> String {
                 "3D!",
                 "Now with Physics!",
                 "Now with Trees!",
-                "Mr.Ben is cool!",
+                "Professor Ben is cool!",
                 "2400+ lines of code!",
                 "Swift Edition!",
                 "100% guaranteed, almost bug free!",
